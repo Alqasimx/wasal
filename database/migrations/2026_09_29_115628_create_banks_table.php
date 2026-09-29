@@ -6,20 +6,33 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('banks', function (Blueprint $table) {
             $table->id();
+
+            $table->string('name');
+            $table->string('account_name');
+            $table->string('account_number');
+
+            $table->string('iban')->nullable();
+
+            $table->foreignId('currency_id')
+                ->constrained('currencies')
+                ->restrictOnDelete();
+
+            $table->text('instructions')->nullable();
+
+            $table->boolean('is_active')->default(true);
+
+            $table->unsignedInteger('sort_order')->default(0);
+
             $table->timestamps();
+
+            $table->index(['is_active', 'sort_order']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('banks');
