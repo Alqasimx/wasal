@@ -2,9 +2,13 @@
 
 namespace App\Services;
 
+use App\Models\AuthSession;
 use App\Models\User;
+use App\Models\UserDevice;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AuthService
@@ -237,6 +241,60 @@ class AuthService
         ])->save();
 
         return $user;
+    }
+
+    public function createApiSession(
+        User $user,
+        Request $request,
+        ?string $deviceName = null,
+        ?string $platform = null
+    ): array {
+        $tokenName = $deviceName ?: 'api';
+
+        $plainTextToken = $user
+            ->createToken($tokenName)
+            ->plainTextToken;
+
+        $tokenHash = hash('sha256', $plainTextToken);
+
+        $device = UserDevice::create([
+            'user_id' => $user->id,
+            'device_name' => $deviceName,
+            'platform' => $platform,
+            'last_seen_at' => now(),
+        ]);
+
+        $session = AuthSession::create([
+            'user_id' => $user->id,
+            'token_hash' => $tokenHash,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'last_activity_at' => now(),
+            'expires_at' => null,
+        ]);
+
+        return [
+            'token' => $plainTextToken,
+            'device' => $device,
+            'session' => $session,
+        ];
+    }
+
+    public function revokeCurrentApiSession(
+        User $user,
+        ?string $plainTextToken = null
+    ): void {
+        if ($plainTextToken) {
+            $tokenHash = hash('sha256', $plainTextToken);
+
+            AuthSession::query()
+                ->where('user_id', $user->id)
+                ->where('token_hash', $tokenHash)
+                ->whereNull('revoked_at')
+                ->update([
+                    'revoked_at' => now(),
+                ]);
+        }
     }
 
     public function logout(): void

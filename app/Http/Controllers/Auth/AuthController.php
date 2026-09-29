@@ -55,6 +55,7 @@ class AuthController extends Controller
             'channel' => ['required', 'in:whatsapp,email'],
             'code' => ['required', 'digits:6'],
             'device_name' => ['nullable', 'string', 'max:255'],
+            'platform' => ['nullable', 'string', 'max:50'],
         ]);
 
         $user = $this->authService->registerWithOtp(
@@ -67,14 +68,17 @@ class AuthController extends Controller
             $data['whatsapp_phone'] ?? null
         );
 
-        $token = $user->createToken(
-            $data['device_name'] ?? 'api'
-        )->plainTextToken;
+        $apiSession = $this->authService->createApiSession(
+            $user,
+            $request,
+            $data['device_name'] ?? 'api',
+            $data['platform'] ?? null
+        );
 
         return response()->json([
             'message' => 'تم إنشاء الحساب بنجاح.',
             'token_type' => 'Bearer',
-            'token' => $token,
+            'token' => $apiSession['token'],
             'user' => $user,
         ], 201);
     }
@@ -87,6 +91,7 @@ class AuthController extends Controller
             'email' => ['nullable', 'email'],
             'code' => ['required', 'digits:6'],
             'device_name' => ['nullable', 'string', 'max:255'],
+            'platform' => ['nullable', 'string', 'max:50'],
         ]);
 
         $user = $this->authService->loginWithOtp(
@@ -96,14 +101,17 @@ class AuthController extends Controller
             $data['email'] ?? null
         );
 
-        $token = $user->createToken(
-            $data['device_name'] ?? 'api'
-        )->plainTextToken;
+        $apiSession = $this->authService->createApiSession(
+            $user,
+            $request,
+            $data['device_name'] ?? 'api',
+            $data['platform'] ?? null
+        );
 
         return response()->json([
             'message' => 'تم تسجيل الدخول بنجاح.',
             'token_type' => 'Bearer',
-            'token' => $token,
+            'token' => $apiSession['token'],
             'user' => $user,
         ]);
     }
@@ -114,6 +122,7 @@ class AuthController extends Controller
             'phone' => ['required', 'string', 'max:30'],
             'password' => ['required', 'string'],
             'device_name' => ['nullable', 'string', 'max:255'],
+            'platform' => ['nullable', 'string', 'max:50'],
         ]);
 
         $user = $this->authService->loginWithPassword(
@@ -121,14 +130,17 @@ class AuthController extends Controller
             $data['password']
         );
 
-        $token = $user->createToken(
-            $data['device_name'] ?? 'api'
-        )->plainTextToken;
+        $apiSession = $this->authService->createApiSession(
+            $user,
+            $request,
+            $data['device_name'] ?? 'api',
+            $data['platform'] ?? null
+        );
 
         return response()->json([
             'message' => 'تم تسجيل الدخول بنجاح.',
             'token_type' => 'Bearer',
-            'token' => $token,
+            'token' => $apiSession['token'],
             'user' => $user,
         ]);
     }
@@ -153,6 +165,12 @@ class AuthController extends Controller
 
         $user->tokens()->delete();
 
+        $user->authSessions()
+            ->whereNull('revoked_at')
+            ->update([
+                'revoked_at' => now(),
+            ]);
+
         return response()->json([
             'message' => 'تم تغيير كلمة المرور بنجاح. يرجى تسجيل الدخول مرة أخرى.',
         ]);
@@ -160,7 +178,28 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $accessToken = $request->user()?->currentAccessToken();
+        $user = $request->user();
+
+        $authorization = $request->header('Authorization');
+
+        $plainTextToken = null;
+
+        if (
+            $authorization &&
+            str_starts_with($authorization, 'Bearer ')
+        ) {
+            $plainTextToken = substr(
+                $authorization,
+                7
+            );
+        }
+
+        $this->authService->revokeCurrentApiSession(
+            $user,
+            $plainTextToken
+        );
+
+        $accessToken = $user?->currentAccessToken();
 
         if (
             $accessToken &&

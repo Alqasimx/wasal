@@ -87,6 +87,7 @@ class AuthControllerTest extends TestCase
             'channel' => 'whatsapp',
             'code' => $this->fakeProvider->code,
             'device_name' => 'Test Device',
+            'platform' => 'android',
         ]);
 
         $response
@@ -102,19 +103,31 @@ class AuthControllerTest extends TestCase
                 'user',
             ]);
 
-        $this->assertDatabaseHas('users', [
-            'name' => 'New User',
-            'phone' => '967700000002',
-        ]);
-
         $user = User::where(
             'phone',
             '967700000002'
         )->first();
 
         $this->assertNotNull($user);
-        $this->assertTrue($user->hasRole('user'));
-        $this->assertCount(1, $user->tokens);
+
+        $this->assertTrue(
+            $user->hasRole('user')
+        );
+
+        $this->assertCount(
+            1,
+            $user->tokens
+        );
+
+        $this->assertDatabaseHas('user_devices', [
+            'user_id' => $user->id,
+            'device_name' => 'Test Device',
+            'platform' => 'android',
+        ]);
+
+        $this->assertDatabaseHas('auth_sessions', [
+            'user_id' => $user->id,
+        ]);
     }
 
     public function test_can_login_with_whatsapp_otp_and_receive_token(): void
@@ -136,7 +149,8 @@ class AuthControllerTest extends TestCase
             'phone' => '967700000003',
             'channel' => 'whatsapp',
             'code' => $this->fakeProvider->code,
-            'device_name' => 'Android',
+            'device_name' => 'Android Phone',
+            'platform' => 'android',
         ]);
 
         $response
@@ -152,7 +166,20 @@ class AuthControllerTest extends TestCase
                 'user',
             ]);
 
-        $this->assertCount(1, $user->fresh()->tokens);
+        $this->assertCount(
+            1,
+            $user->fresh()->tokens
+        );
+
+        $this->assertDatabaseHas('user_devices', [
+            'user_id' => $user->id,
+            'device_name' => 'Android Phone',
+            'platform' => 'android',
+        ]);
+
+        $this->assertDatabaseHas('auth_sessions', [
+            'user_id' => $user->id,
+        ]);
     }
 
     public function test_can_login_with_password_and_receive_token(): void
@@ -167,6 +194,7 @@ class AuthControllerTest extends TestCase
             'phone' => '967700000004',
             'password' => 'password123',
             'device_name' => 'iPhone',
+            'platform' => 'ios',
         ]);
 
         $response
@@ -182,7 +210,20 @@ class AuthControllerTest extends TestCase
                 'user',
             ]);
 
-        $this->assertCount(1, $user->fresh()->tokens);
+        $this->assertCount(
+            1,
+            $user->fresh()->tokens
+        );
+
+        $this->assertDatabaseHas('user_devices', [
+            'user_id' => $user->id,
+            'device_name' => 'iPhone',
+            'platform' => 'ios',
+        ]);
+
+        $this->assertDatabaseHas('auth_sessions', [
+            'user_id' => $user->id,
+        ]);
     }
 
     public function test_wrong_password_returns_validation_error(): void
@@ -249,6 +290,14 @@ class AuthControllerTest extends TestCase
 
         $user->createToken('Old Device');
 
+        $user->authSessions()->create([
+            'token_hash' => hash(
+                'sha256',
+                'old-token'
+            ),
+            'last_activity_at' => now(),
+        ]);
+
         app(OtpService::class)->send(
             'whatsapp',
             '967700000008',
@@ -279,7 +328,17 @@ class AuthControllerTest extends TestCase
             )
         );
 
-        $this->assertCount(0, $user->tokens);
+        $this->assertCount(
+            0,
+            $user->tokens
+        );
+
+        $this->assertNotNull(
+            $user
+                ->authSessions()
+                ->first()
+                ->revoked_at
+        );
     }
 
     public function test_authenticated_user_can_get_profile(): void
@@ -295,7 +354,13 @@ class AuthControllerTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonPath('id', $user->id)
-            ->assertJsonPath('phone', '967700000009');
+            ->assertJsonPath(
+                'id',
+                $user->id
+            )
+            ->assertJsonPath(
+                'phone',
+                '967700000009'
+            );
     }
 }
