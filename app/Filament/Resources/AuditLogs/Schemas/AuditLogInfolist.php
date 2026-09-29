@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\AuditLogs\Schemas;
 
+use App\Models\AuditLog;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
@@ -22,7 +23,13 @@ class AuditLogInfolist
                     ->label('العملية'),
 
                 TextEntry::make('entity_type')
-                    ->label('نوع السجل'),
+                    ->label('نوع السجل')
+                    ->formatStateUsing(
+                        fn (?string $state): string =>
+                            $state
+                                ? class_basename($state)
+                                : '—'
+                    ),
 
                 TextEntry::make('entity_id')
                     ->label('رقم السجل المرتبط')
@@ -34,35 +41,42 @@ class AuditLogInfolist
 
                 TextEntry::make('user_agent')
                     ->label('المتصفح / الجهاز')
-                    ->placeholder('—'),
+                    ->placeholder('—')
+                    ->columnSpanFull(),
 
                 TextEntry::make('old_values_json')
                     ->label('القيم السابقة')
-                    ->formatStateUsing(
-                        fn ($state): string =>
-                            is_array($state)
+                    ->state(
+                        fn (AuditLog $record): string =>
+                            $record->old_values_json
                                 ? json_encode(
-                                    $state,
-                                    JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
+                                    $record->old_values_json,
+                                    JSON_PRETTY_PRINT |
+                                    JSON_UNESCAPED_UNICODE |
+                                    JSON_UNESCAPED_SLASHES
                                 )
-                                : (string) ($state ?? '—')
-                    ),
+                                : 'لا توجد قيم سابقة'
+                    )
+                    ->columnSpanFull(),
 
                 TextEntry::make('new_values_json')
                     ->label('القيم الجديدة')
-                    ->formatStateUsing(
-                        fn ($state): string =>
-                            is_array($state)
+                    ->state(
+                        fn (AuditLog $record): string =>
+                            $record->new_values_json
                                 ? json_encode(
-                                    $state,
-                                    JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
+                                    $record->new_values_json,
+                                    JSON_PRETTY_PRINT |
+                                    JSON_UNESCAPED_UNICODE |
+                                    JSON_UNESCAPED_SLASHES
                                 )
-                                : (string) ($state ?? '—')
-                    ),
+                                : 'لا توجد قيم جديدة'
+                    )
+                    ->columnSpanFull(),
 
                 TextEntry::make('created_at')
                     ->label('تاريخ العملية')
-                    ->dateTime(),
+                    ->dateTime('Y-m-d H:i:s'),
             ]);
     }
 }

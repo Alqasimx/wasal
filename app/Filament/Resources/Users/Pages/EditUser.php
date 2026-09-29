@@ -2,22 +2,23 @@
 
 namespace App\Filament\Resources\Users\Pages;
 
+use App\Filament\Concerns\AuditsFilamentRecordChanges;
 use App\Filament\Resources\Users\UserResource;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\ForceDeleteAction;
-use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditUser extends EditRecord
 {
+    use AuditsFilamentRecordChanges;
+
     protected static string $resource = UserResource::class;
 
-    protected function getHeaderActions(): array
+    protected function beforeSave(): void
     {
-        return [
-            DeleteAction::make(),
-            ForceDeleteAction::make(),
-            RestoreAction::make(),
-        ];
+        $this->captureAuditOldValues();
+    }
+
+    protected function afterSave(): void
+    {
+        $this->writeUpdatedAuditLog();
     }
 }

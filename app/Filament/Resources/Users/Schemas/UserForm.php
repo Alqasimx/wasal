@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Users\Schemas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Facades\Hash;
 
 class UserForm
 {
@@ -22,12 +21,12 @@ class UserForm
                     ->label('رقم الهاتف')
                     ->tel()
                     ->unique(ignoreRecord: true)
-                    ->maxLength(255),
+                    ->maxLength(30),
 
                 TextInput::make('whatsapp_phone')
                     ->label('رقم واتساب')
                     ->tel()
-                    ->maxLength(255),
+                    ->maxLength(30),
 
                 TextInput::make('email')
                     ->label('البريد الإلكتروني')
@@ -39,28 +38,41 @@ class UserForm
                     ->label('كلمة المرور')
                     ->password()
                     ->revealable()
-                    ->required(fn (string $operation): bool => $operation === 'create')
-                    ->dehydrateStateUsing(
-                        fn (?string $state): ?string =>
-                            filled($state) ? Hash::make($state) : null
+                    ->required()
+                    ->minLength(8)
+                    ->visible(
+                        fn (string $operation): bool =>
+                            $operation === 'create'
                     )
                     ->dehydrated(
-                        fn (?string $state): bool => filled($state)
-                    )
-                    ->minLength(8),
+                        fn (string $operation): bool =>
+                            $operation === 'create'
+                    ),
 
                 Select::make('roles')
                     ->label('الأدوار')
                     ->relationship('roles', 'name')
                     ->multiple()
                     ->preload()
-                    ->searchable(),
+                    ->searchable()
+                    ->disabled(
+                        fn ($record): bool =>
+                            $record?->hasRole('system_admin') ?? false
+                    ),
 
-                TextInput::make('status')
+                Select::make('status')
                     ->label('الحالة')
-                    ->required()
+                    ->options([
+                        'active' => 'نشط',
+                        'inactive' => 'غير نشط',
+                        'suspended' => 'موقوف',
+                    ])
                     ->default('active')
-                    ->maxLength(50),
+                    ->required()
+                    ->disabled(
+                        fn ($record): bool =>
+                            $record?->hasRole('system_admin') ?? false
+                    ),
 
                 Select::make('preferred_language')
                     ->label('اللغة المفضلة')
@@ -73,13 +85,19 @@ class UserForm
 
                 Select::make('preferred_currency_id')
                     ->label('العملة المفضلة')
-                    ->relationship('preferredCurrency', 'name_ar')
+                    ->relationship(
+                        'preferredCurrency',
+                        'name_ar'
+                    )
                     ->searchable()
                     ->preload(),
 
                 Select::make('preferred_city_id')
                     ->label('المدينة المفضلة')
-                    ->relationship('preferredCity', 'name_ar')
+                    ->relationship(
+                        'preferredCity',
+                        'name_ar'
+                    )
                     ->searchable()
                     ->preload(),
             ]);
