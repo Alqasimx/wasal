@@ -20,8 +20,9 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'phone' => ['required', 'string', 'max:30'],
+            'whatsapp_phone' => ['nullable', 'string', 'max:30'],
             'channel' => ['required', 'in:whatsapp,email'],
-            'email' => ['nullable', 'email'],
+            'email' => ['nullable', 'email', 'max:255'],
             'purpose' => ['required', 'in:register,login,password_reset'],
         ]);
 
@@ -35,10 +36,11 @@ class AuthController extends Controller
         }
 
         $this->authService->requestOtp(
-            $data['phone'],
-            $data['channel'],
-            $data['email'] ?? null,
-            $data['purpose']
+            phone: $data['phone'],
+            channel: $data['channel'],
+            email: $data['email'] ?? null,
+            purpose: $data['purpose'],
+            whatsappPhone: $data['whatsapp_phone'] ?? null
         );
 
         return response()->json([
@@ -102,7 +104,7 @@ class AuthController extends Controller
         $data = $request->validate([
             'phone' => ['required', 'string', 'max:30'],
             'channel' => ['required', 'in:whatsapp,email'],
-            'email' => ['nullable', 'email'],
+            'email' => ['nullable', 'email', 'max:255'],
             'code' => ['required', 'digits:6'],
             'device_name' => ['nullable', 'string', 'max:255'],
             'platform' => ['nullable', 'string', 'max:50'],
@@ -187,7 +189,7 @@ class AuthController extends Controller
         $data = $request->validate([
             'phone' => ['required', 'string', 'max:30'],
             'channel' => ['required', 'in:whatsapp,email'],
-            'email' => ['nullable', 'email'],
+            'email' => ['nullable', 'email', 'max:255'],
             'code' => ['required', 'digits:6'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
@@ -236,10 +238,7 @@ class AuthController extends Controller
             $authorization &&
             str_starts_with($authorization, 'Bearer ')
         ) {
-            $plainTextToken = substr(
-                $authorization,
-                7
-            );
+            $plainTextToken = substr($authorization, 7);
         }
 
         $this->authService->revokeCurrentApiSession(

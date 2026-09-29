@@ -8,7 +8,6 @@ use App\Models\UserDevice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AuthService
@@ -22,21 +21,87 @@ class AuthService
         string $phone,
         string $channel,
         ?string $email = null,
-        string $purpose = 'login'
+        string $purpose = 'login',
+        ?string $whatsappPhone = null
     ): void {
         $user = User::query()
             ->where('phone', $phone)
             ->first();
 
-        $destination = match ($channel) {
-            'whatsapp' => $phone,
-            'email' => $email,
-            default => null,
-        };
+        if ($purpose === 'register') {
+            if ($user) {
+                throw ValidationException::withMessages([
+                    'phone' => 'رقم الهاتف مستخدم بالفعل.',
+                ]);
+            }
 
-        if (! $destination) {
+            if (
+                $email &&
+                User::query()->where('email', $email)->exists()
+            ) {
+                throw ValidationException::withMessages([
+                    'email' => 'البريد الإلكتروني مستخدم بالفعل.',
+                ]);
+            }
+
+            $destination = match ($channel) {
+                'whatsapp' => $whatsappPhone ?: $phone,
+                'email' => $email,
+                default => null,
+            };
+
+            if (! $destination) {
+                throw ValidationException::withMessages([
+                    'channel' => 'بيانات التحقق غير مكتملة.',
+                ]);
+            }
+
+            $this->otpService->send(
+                $channel,
+                $destination,
+                'register'
+            );
+
+            return;
+        }
+
+        if (! in_array($purpose, ['login', 'password_reset'], true)) {
             throw ValidationException::withMessages([
-                'channel' => 'قناة التحقق غير صالحة أو بياناتها ناقصة.',
+                'purpose' => 'غرض رمز التحقق غير صالح.',
+            ]);
+        }
+
+        if (! $user) {
+            throw ValidationException::withMessages([
+                'phone' => 'الحساب غير موجود.',
+            ]);
+        }
+
+        if ($user->status !== 'active') {
+            throw ValidationException::withMessages([
+                'phone' => 'الحساب غير نشط.',
+            ]);
+        }
+
+        if ($channel === 'email') {
+            if (! $user->email) {
+                throw ValidationException::withMessages([
+                    'email' => 'لا يوجد بريد إلكتروني مرتبط بهذا الحساب.',
+                ]);
+            }
+
+            if (! $email || strcasecmp($email, $user->email) !== 0) {
+                throw ValidationException::withMessages([
+                    'email' => 'البريد الإلكتروني لا يطابق البريد المسجل في الحساب.',
+                ]);
+            }
+
+            $destination = $user->email;
+        } elseif ($channel === 'whatsapp') {
+            $destination = $user->whatsapp_phone ?: $user->phone;
+        } else {
+            throw ValidationException::withMessages([
+                'channel' => 'قناة التحقق غير صالحة.',
             ]);
         }
 
@@ -57,21 +122,26 @@ class AuthService
         ?string $email = null,
         ?string $whatsappPhone = null
     ): User {
-        if (User::where('phone', $phone)->exists()) {
+        if (User::query()->where('phone', $phone)->exists()) {
             throw ValidationException::withMessages([
                 'phone' => 'رقم الهاتف مستخدم بالفعل.',
             ]);
         }
 
-        if ($email && User::where('email', $email)->exists()) {
+        if (
+            $email &&
+            User::query()->where('email', $email)->exists()
+        ) {
             throw ValidationException::withMessages([
                 'email' => 'البريد الإلكتروني مستخدم بالفعل.',
             ]);
         }
 
-        $destination = $channel === 'email'
-            ? $email
-            : ($whatsappPhone ?: $phone);
+        $destination = match ($channel) {
+            'email' => $email,
+            'whatsapp' => $whatsappPhone ?: $phone,
+            default => null,
+        };
 
         if (! $destination) {
             throw ValidationException::withMessages([
@@ -96,6 +166,7 @@ class AuthService
             'phone' => $phone,
             'whatsapp_phone' => $whatsappPhone ?: $phone,
             'email' => $email,
+            'email_verified_at' => $channel === 'email' ? now() : null,
             'password' => Hash::make($password),
             'preferred_language' => 'ar',
             'status' => 'active',
@@ -134,13 +205,25 @@ class AuthService
             ]);
         }
 
-        $destination = $channel === 'email'
-            ? ($email ?: $user->email)
-            : ($user->whatsapp_phone ?: $user->phone);
+        if ($channel === 'email') {
+            if (! $user->email) {
+                throw ValidationException::withMessages([
+                    'email' => 'لا يوجد بريد إلكتروني مرتبط بهذا الحساب.',
+                ]);
+            }
 
-        if (! $destination) {
+            if (! $email || strcasecmp($email, $user->email) !== 0) {
+                throw ValidationException::withMessages([
+                    'email' => 'البريد الإلكتروني لا يطابق البريد المسجل في الحساب.',
+                ]);
+            }
+
+            $destination = $user->email;
+        } elseif ($channel === 'whatsapp') {
+            $destination = $user->whatsapp_phone ?: $user->phone;
+        } else {
             throw ValidationException::withMessages([
-                'channel' => 'لا توجد وسيلة تحقق متاحة لهذا الحساب.',
+                'channel' => 'قناة التحقق غير صالحة.',
             ]);
         }
 
@@ -214,13 +297,31 @@ class AuthService
             ]);
         }
 
-        $destination = $channel === 'email'
-            ? ($email ?: $user->email)
-            : ($user->whatsapp_phone ?: $user->phone);
-
-        if (! $destination) {
+        if ($user->status !== 'active') {
             throw ValidationException::withMessages([
-                'channel' => 'لا توجد وسيلة تحقق متاحة لهذا الحساب.',
+                'phone' => 'الحساب غير نشط.',
+            ]);
+        }
+
+        if ($channel === 'email') {
+            if (! $user->email) {
+                throw ValidationException::withMessages([
+                    'email' => 'لا يوجد بريد إلكتروني مرتبط بهذا الحساب.',
+                ]);
+            }
+
+            if (! $email || strcasecmp($email, $user->email) !== 0) {
+                throw ValidationException::withMessages([
+                    'email' => 'البريد الإلكتروني لا يطابق البريد المسجل في الحساب.',
+                ]);
+            }
+
+            $destination = $user->email;
+        } elseif ($channel === 'whatsapp') {
+            $destination = $user->whatsapp_phone ?: $user->phone;
+        } else {
+            throw ValidationException::withMessages([
+                'channel' => 'قناة التحقق غير صالحة.',
             ]);
         }
 
@@ -284,17 +385,19 @@ class AuthService
         User $user,
         ?string $plainTextToken = null
     ): void {
-        if ($plainTextToken) {
-            $tokenHash = hash('sha256', $plainTextToken);
-
-            AuthSession::query()
-                ->where('user_id', $user->id)
-                ->where('token_hash', $tokenHash)
-                ->whereNull('revoked_at')
-                ->update([
-                    'revoked_at' => now(),
-                ]);
+        if (! $plainTextToken) {
+            return;
         }
+
+        $tokenHash = hash('sha256', $plainTextToken);
+
+        AuthSession::query()
+            ->where('user_id', $user->id)
+            ->where('token_hash', $tokenHash)
+            ->whereNull('revoked_at')
+            ->update([
+                'revoked_at' => now(),
+            ]);
     }
 
     public function logout(): void
