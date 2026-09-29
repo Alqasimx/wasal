@@ -16,6 +16,8 @@ Route::prefix('auth')->group(function () {
 
     Route::post('/login/password', [AuthController::class, 'loginPassword']);
 
+    Route::post('/password/reset', [AuthController::class, 'resetPassword']);
+
     Route::post('/logout', [AuthController::class, 'logout'])
         ->middleware('auth');
 });

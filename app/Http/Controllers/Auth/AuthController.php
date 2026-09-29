@@ -112,6 +112,29 @@ class AuthController extends Controller
         ]);
     }
 
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'phone' => ['required', 'string', 'max:30'],
+            'channel' => ['required', 'in:whatsapp,email'],
+            'email' => ['nullable', 'email'],
+            'code' => ['required', 'digits:6'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $this->authService->resetPasswordWithOtp(
+            $data['phone'],
+            $data['channel'],
+            $data['code'],
+            $data['password'],
+            $data['email'] ?? null
+        );
+
+        return response()->json([
+            'message' => 'تم تغيير كلمة المرور بنجاح.',
+        ]);
+    }
+
     public function logout(Request $request): JsonResponse
     {
         $this->authService->logout();

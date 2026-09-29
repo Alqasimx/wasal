@@ -193,6 +193,52 @@ class AuthService
         return $user;
     }
 
+    public function resetPasswordWithOtp(
+        string $phone,
+        string $channel,
+        string $code,
+        string $newPassword,
+        ?string $email = null
+    ): User {
+        $user = User::query()
+            ->where('phone', $phone)
+            ->first();
+
+        if (! $user) {
+            throw ValidationException::withMessages([
+                'phone' => 'الحساب غير موجود.',
+            ]);
+        }
+
+        $destination = $channel === 'email'
+            ? ($email ?: $user->email)
+            : ($user->whatsapp_phone ?: $user->phone);
+
+        if (! $destination) {
+            throw ValidationException::withMessages([
+                'channel' => 'لا توجد وسيلة تحقق متاحة لهذا الحساب.',
+            ]);
+        }
+
+        $verified = $this->otpService->verify(
+            $destination,
+            $code,
+            'password_reset'
+        );
+
+        if (! $verified) {
+            throw ValidationException::withMessages([
+                'code' => 'رمز التحقق غير صحيح أو منتهي الصلاحية.',
+            ]);
+        }
+
+        $user->forceFill([
+            'password' => Hash::make($newPassword),
+        ])->save();
+
+        return $user;
+    }
+
     public function logout(): void
     {
         Auth::logout();

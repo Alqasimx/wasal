@@ -7,6 +7,7 @@ use App\Services\OtpService;
 use App\Services\WhatsAppOtpProvider;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class AuthControllerTest extends TestCase
@@ -216,5 +217,45 @@ class AuthControllerTest extends TestCase
             ]);
 
         $this->assertGuest();
+    }
+
+    public function test_user_can_reset_password_with_whatsapp_otp(): void
+    {
+        $user = User::factory()->create([
+            'phone' => '967700000008',
+            'whatsapp_phone' => '967700000008',
+            'password' => 'old-password123',
+            'status' => 'active',
+        ]);
+
+        app(OtpService::class)->send(
+            'whatsapp',
+            '967700000008',
+            'password_reset',
+            $user
+        );
+
+        $response = $this->postJson('/auth/password/reset', [
+            'phone' => '967700000008',
+            'channel' => 'whatsapp',
+            'code' => $this->fakeProvider->code,
+            'password' => 'new-password123',
+            'password_confirmation' => 'new-password123',
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJson([
+                'message' => 'تم تغيير كلمة المرور بنجاح.',
+            ]);
+
+        $user->refresh();
+
+        $this->assertTrue(
+            Hash::check(
+                'new-password123',
+                $user->password
+            )
+        );
     }
 }
