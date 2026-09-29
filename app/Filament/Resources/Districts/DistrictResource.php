@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Districts;
 
+use App\Filament\Concerns\HasResourcePermissions;
 use App\Filament\Resources\Districts\Pages\CreateDistrict;
 use App\Filament\Resources\Districts\Pages\EditDistrict;
 use App\Filament\Resources\Districts\Pages\ListDistricts;
@@ -9,28 +10,34 @@ use App\Filament\Resources\Districts\Schemas\DistrictForm;
 use App\Filament\Resources\Districts\Tables\DistrictsTable;
 use App\Models\District;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class DistrictResource extends Resource
 {
+    use HasResourcePermissions;
+
     protected static ?string $model = District::class;
+
+    protected static string $viewPermission = 'geography.view';
+
+    protected static string $managePermission = 'geography.manage';
 
     protected static string|BackedEnum|null $navigationIcon =
         Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'name_ar';
 
-    protected static ?string $navigationLabel = 'ط§ظ„ظ…ط¯ظٹط±ظٹط§طھ';
+    protected static ?string $navigationLabel = 'المديريات';
 
-    protected static ?string $modelLabel = 'ظ…ط¯ظٹط±ظٹط©';
+    protected static ?string $modelLabel = 'مديرية';
 
-    protected static ?string $pluralModelLabel = 'ط§ظ„ظ…ط¯ظٹط±ظٹط§طھ';
+    protected static ?string $pluralModelLabel = 'المديريات';
 
-    protected static string|UnitEnum|null $navigationGroup = 'ط§ظ„ظ…ظˆط§ظ‚ط¹';
+    protected static string|UnitEnum|null $navigationGroup = 'المواقع';
 
     public static function form(Schema $schema): Schema
     {

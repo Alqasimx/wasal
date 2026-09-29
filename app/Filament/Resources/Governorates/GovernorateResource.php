@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Governorates;
 
+use App\Filament\Concerns\HasResourcePermissions;
 use App\Filament\Resources\Governorates\Pages\CreateGovernorate;
 use App\Filament\Resources\Governorates\Pages\EditGovernorate;
 use App\Filament\Resources\Governorates\Pages\ListGovernorates;
@@ -9,28 +10,34 @@ use App\Filament\Resources\Governorates\Schemas\GovernorateForm;
 use App\Filament\Resources\Governorates\Tables\GovernoratesTable;
 use App\Models\Governorate;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class GovernorateResource extends Resource
 {
+    use HasResourcePermissions;
+
     protected static ?string $model = Governorate::class;
+
+    protected static string $viewPermission = 'geography.view';
+
+    protected static string $managePermission = 'geography.manage';
 
     protected static string|BackedEnum|null $navigationIcon =
         Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'name_ar';
 
-    protected static ?string $navigationLabel = 'ط§ظ„ظ…ط­ط§ظپط¸ط§طھ';
+    protected static ?string $navigationLabel = 'المحافظات';
 
-    protected static ?string $modelLabel = 'ظ…ط­ط§ظپط¸ط©';
+    protected static ?string $modelLabel = 'محافظة';
 
-    protected static ?string $pluralModelLabel = 'ط§ظ„ظ…ط­ط§ظپط¸ط§طھ';
+    protected static ?string $pluralModelLabel = 'المحافظات';
 
-    protected static string|UnitEnum|null $navigationGroup = 'ط§ظ„ظ…ظˆط§ظ‚ط¹';
+    protected static string|UnitEnum|null $navigationGroup = 'المواقع';
 
     public static function form(Schema $schema): Schema
     {

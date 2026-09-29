@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Settings;
 
+use App\Filament\Concerns\HasResourcePermissions;
 use App\Filament\Resources\Settings\Pages\CreateSetting;
 use App\Filament\Resources\Settings\Pages\EditSetting;
 use App\Filament\Resources\Settings\Pages\ListSettings;
@@ -9,28 +10,34 @@ use App\Filament\Resources\Settings\Schemas\SettingForm;
 use App\Filament\Resources\Settings\Tables\SettingsTable;
 use App\Models\Setting;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class SettingResource extends Resource
 {
+    use HasResourcePermissions;
+
     protected static ?string $model = Setting::class;
+
+    protected static string $viewPermission = 'settings.view';
+
+    protected static string $managePermission = 'settings.manage';
 
     protected static string|BackedEnum|null $navigationIcon =
         Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'key';
 
-    protected static ?string $navigationLabel = 'ط§ظ„ط¥ط¹ط¯ط§ط¯ط§طھ';
+    protected static ?string $navigationLabel = 'الإعدادات';
 
-    protected static ?string $modelLabel = 'ط¥ط¹ط¯ط§ط¯';
+    protected static ?string $modelLabel = 'إعداد';
 
-    protected static ?string $pluralModelLabel = 'ط§ظ„ط¥ط¹ط¯ط§ط¯ط§طھ';
+    protected static ?string $pluralModelLabel = 'الإعدادات';
 
-    protected static string|UnitEnum|null $navigationGroup = 'ط¥ط¹ط¯ط§ط¯ط§طھ ط§ظ„ظ†ط¸ط§ظ…';
+    protected static string|UnitEnum|null $navigationGroup = 'إعدادات النظام';
 
     public static function form(Schema $schema): Schema
     {

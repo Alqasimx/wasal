@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Neighborhoods;
 
+use App\Filament\Concerns\HasResourcePermissions;
 use App\Filament\Resources\Neighborhoods\Pages\CreateNeighborhood;
 use App\Filament\Resources\Neighborhoods\Pages\EditNeighborhood;
 use App\Filament\Resources\Neighborhoods\Pages\ListNeighborhoods;
@@ -9,28 +10,34 @@ use App\Filament\Resources\Neighborhoods\Schemas\NeighborhoodForm;
 use App\Filament\Resources\Neighborhoods\Tables\NeighborhoodsTable;
 use App\Models\Neighborhood;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class NeighborhoodResource extends Resource
 {
+    use HasResourcePermissions;
+
     protected static ?string $model = Neighborhood::class;
+
+    protected static string $viewPermission = 'geography.view';
+
+    protected static string $managePermission = 'geography.manage';
 
     protected static string|BackedEnum|null $navigationIcon =
         Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'name_ar';
 
-    protected static ?string $navigationLabel = 'ط§ظ„ط£ط­ظٹط§ط،';
+    protected static ?string $navigationLabel = 'الأحياء';
 
-    protected static ?string $modelLabel = 'ط­ظٹ';
+    protected static ?string $modelLabel = 'حي';
 
-    protected static ?string $pluralModelLabel = 'ط§ظ„ط£ط­ظٹط§ط،';
+    protected static ?string $pluralModelLabel = 'الأحياء';
 
-    protected static string|UnitEnum|null $navigationGroup = 'ط§ظ„ظ…ظˆط§ظ‚ط¹';
+    protected static string|UnitEnum|null $navigationGroup = 'المواقع';
 
     public static function form(Schema $schema): Schema
     {

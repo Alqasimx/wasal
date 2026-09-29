@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Currencies;
 
+use App\Filament\Concerns\HasResourcePermissions;
 use App\Filament\Resources\Currencies\Pages\CreateCurrency;
 use App\Filament\Resources\Currencies\Pages\EditCurrency;
 use App\Filament\Resources\Currencies\Pages\ListCurrencies;
@@ -17,7 +18,13 @@ use UnitEnum;
 
 class CurrencyResource extends Resource
 {
+    use HasResourcePermissions;
+
     protected static ?string $model = Currency::class;
+
+    protected static string $viewPermission = 'currencies.view';
+
+    protected static string $managePermission = 'currencies.manage';
 
     protected static string|BackedEnum|null $navigationIcon =
         Heroicon::OutlinedRectangleStack;

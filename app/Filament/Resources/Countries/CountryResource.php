@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Countries;
 
+use App\Filament\Concerns\HasResourcePermissions;
 use App\Filament\Resources\Countries\Pages\CreateCountry;
 use App\Filament\Resources\Countries\Pages\EditCountry;
 use App\Filament\Resources\Countries\Pages\ListCountries;
@@ -13,14 +14,30 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class CountryResource extends Resource
 {
+    use HasResourcePermissions;
+
     protected static ?string $model = Country::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string $viewPermission = 'geography.view';
+
+    protected static string $managePermission = 'geography.manage';
+
+    protected static string|BackedEnum|null $navigationIcon =
+        Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'name_ar';
+
+    protected static ?string $navigationLabel = 'الدول';
+
+    protected static ?string $modelLabel = 'دولة';
+
+    protected static ?string $pluralModelLabel = 'الدول';
+
+    protected static string|UnitEnum|null $navigationGroup = 'المواقع';
 
     public static function form(Schema $schema): Schema
     {
@@ -34,9 +51,7 @@ class CountryResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -48,4 +63,3 @@ class CountryResource extends Resource
         ];
     }
 }
-
