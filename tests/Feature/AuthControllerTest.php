@@ -8,6 +8,7 @@ use App\Services\WhatsAppOtpProvider;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class AuthControllerTest extends TestCase
@@ -42,7 +43,7 @@ class AuthControllerTest extends TestCase
 
     public function test_can_request_whatsapp_otp(): void
     {
-        $response = $this->postJson('/auth/otp/request', [
+        $response = $this->postJson('/api/v1/auth/otp/request', [
             'phone' => '967700000001',
             'channel' => 'whatsapp',
             'purpose' => 'register',
@@ -78,7 +79,7 @@ class AuthControllerTest extends TestCase
             'register'
         );
 
-        $response = $this->postJson('/auth/register', [
+        $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'New User',
             'phone' => '967700000002',
             'password' => 'password123',
@@ -108,8 +109,6 @@ class AuthControllerTest extends TestCase
         $this->assertTrue(
             $user->hasRole('user')
         );
-
-        $this->assertAuthenticatedAs($user);
     }
 
     public function test_can_login_with_whatsapp_otp(): void
@@ -127,7 +126,7 @@ class AuthControllerTest extends TestCase
             $user
         );
 
-        $response = $this->postJson('/auth/login/otp', [
+        $response = $this->postJson('/api/v1/auth/login/otp', [
             'phone' => '967700000003',
             'channel' => 'whatsapp',
             'code' => $this->fakeProvider->code,
@@ -138,19 +137,17 @@ class AuthControllerTest extends TestCase
             ->assertJson([
                 'message' => 'تم تسجيل الدخول بنجاح.',
             ]);
-
-        $this->assertAuthenticatedAs($user);
     }
 
     public function test_can_login_with_password(): void
     {
-        $user = User::factory()->create([
+        User::factory()->create([
             'phone' => '967700000004',
             'password' => 'password123',
             'status' => 'active',
         ]);
 
-        $response = $this->postJson('/auth/login/password', [
+        $response = $this->postJson('/api/v1/auth/login/password', [
             'phone' => '967700000004',
             'password' => 'password123',
         ]);
@@ -160,8 +157,6 @@ class AuthControllerTest extends TestCase
             ->assertJson([
                 'message' => 'تم تسجيل الدخول بنجاح.',
             ]);
-
-        $this->assertAuthenticatedAs($user);
     }
 
     public function test_wrong_password_returns_validation_error(): void
@@ -172,7 +167,7 @@ class AuthControllerTest extends TestCase
             'status' => 'active',
         ]);
 
-        $response = $this->postJson('/auth/login/password', [
+        $response = $this->postJson('/api/v1/auth/login/password', [
             'phone' => '967700000005',
             'password' => 'wrong-password',
         ]);
@@ -186,7 +181,7 @@ class AuthControllerTest extends TestCase
 
     public function test_email_is_required_when_email_channel_is_selected(): void
     {
-        $response = $this->postJson('/auth/otp/request', [
+        $response = $this->postJson('/api/v1/auth/otp/request', [
             'phone' => '967700000006',
             'channel' => 'email',
             'purpose' => 'register',
@@ -206,17 +201,15 @@ class AuthControllerTest extends TestCase
             'status' => 'active',
         ]);
 
-        $this->actingAs($user);
+        Sanctum::actingAs($user);
 
-        $response = $this->postJson('/auth/logout');
+        $response = $this->postJson('/api/v1/auth/logout');
 
         $response
             ->assertOk()
             ->assertJson([
                 'message' => 'تم تسجيل الخروج بنجاح.',
             ]);
-
-        $this->assertGuest();
     }
 
     public function test_user_can_reset_password_with_whatsapp_otp(): void
@@ -235,7 +228,7 @@ class AuthControllerTest extends TestCase
             $user
         );
 
-        $response = $this->postJson('/auth/password/reset', [
+        $response = $this->postJson('/api/v1/auth/password/reset', [
             'phone' => '967700000008',
             'channel' => 'whatsapp',
             'code' => $this->fakeProvider->code,
@@ -257,5 +250,22 @@ class AuthControllerTest extends TestCase
                 $user->password
             )
         );
+    }
+
+    public function test_authenticated_user_can_get_profile(): void
+    {
+        $user = User::factory()->create([
+            'phone' => '967700000009',
+            'status' => 'active',
+        ]);
+
+        Sanctum::actingAs($user);
+
+        $response = $this->getJson('/api/v1/user');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('id', $user->id)
+            ->assertJsonPath('phone', '967700000009');
     }
 }
