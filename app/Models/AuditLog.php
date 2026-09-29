@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use LogicException;
 
 class AuditLog extends Model
 {
@@ -30,8 +31,26 @@ class AuditLog extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::updating(function () {
+            throw new LogicException(
+                'Audit logs cannot be modified.'
+            );
+        });
+
+        static::deleting(function () {
+            throw new LogicException(
+                'Audit logs cannot be deleted.'
+            );
+        });
+    }
+
     public function actor(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'actor_user_id');
+        return $this->belongsTo(
+            User::class,
+            'actor_user_id'
+        );
     }
 }

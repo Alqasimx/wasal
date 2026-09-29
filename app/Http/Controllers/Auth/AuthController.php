@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuditService;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -10,7 +11,8 @@ use Illuminate\Http\Request;
 class AuthController extends Controller
 {
     public function __construct(
-        protected AuthService $authService
+        protected AuthService $authService,
+        protected AuditService $auditService
     ) {
     }
 
@@ -75,6 +77,18 @@ class AuthController extends Controller
             $data['platform'] ?? null
         );
 
+        $this->auditService->forModel(
+            action: 'auth.register',
+            model: $user,
+            newValues: [
+                'phone' => $user->phone,
+                'email' => $user->email,
+                'status' => $user->status,
+            ],
+            actor: $user,
+            request: $request
+        );
+
         return response()->json([
             'message' => 'تم إنشاء الحساب بنجاح.',
             'token_type' => 'Bearer',
@@ -108,6 +122,18 @@ class AuthController extends Controller
             $data['platform'] ?? null
         );
 
+        $this->auditService->forModel(
+            action: 'auth.login_otp',
+            model: $user,
+            newValues: [
+                'channel' => $data['channel'],
+                'device_name' => $data['device_name'] ?? 'api',
+                'platform' => $data['platform'] ?? null,
+            ],
+            actor: $user,
+            request: $request
+        );
+
         return response()->json([
             'message' => 'تم تسجيل الدخول بنجاح.',
             'token_type' => 'Bearer',
@@ -135,6 +161,17 @@ class AuthController extends Controller
             $request,
             $data['device_name'] ?? 'api',
             $data['platform'] ?? null
+        );
+
+        $this->auditService->forModel(
+            action: 'auth.login_password',
+            model: $user,
+            newValues: [
+                'device_name' => $data['device_name'] ?? 'api',
+                'platform' => $data['platform'] ?? null,
+            ],
+            actor: $user,
+            request: $request
         );
 
         return response()->json([
@@ -171,6 +208,17 @@ class AuthController extends Controller
                 'revoked_at' => now(),
             ]);
 
+        $this->auditService->forModel(
+            action: 'auth.password_reset',
+            model: $user,
+            newValues: [
+                'all_tokens_revoked' => true,
+                'all_sessions_revoked' => true,
+            ],
+            actor: $user,
+            request: $request
+        );
+
         return response()->json([
             'message' => 'تم تغيير كلمة المرور بنجاح. يرجى تسجيل الدخول مرة أخرى.',
         ]);
@@ -206,6 +254,18 @@ class AuthController extends Controller
             method_exists($accessToken, 'delete')
         ) {
             $accessToken->delete();
+        }
+
+        if ($user) {
+            $this->auditService->forModel(
+                action: 'auth.logout',
+                model: $user,
+                newValues: [
+                    'current_session_revoked' => true,
+                ],
+                actor: $user,
+                request: $request
+            );
         }
 
         return response()->json([
