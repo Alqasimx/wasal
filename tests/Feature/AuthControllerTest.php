@@ -71,7 +71,7 @@ class AuthControllerTest extends TestCase
         );
     }
 
-    public function test_can_register_with_whatsapp_otp(): void
+    public function test_can_register_with_whatsapp_otp_and_receive_token(): void
     {
         app(OtpService::class)->send(
             'whatsapp',
@@ -86,12 +86,20 @@ class AuthControllerTest extends TestCase
             'password_confirmation' => 'password123',
             'channel' => 'whatsapp',
             'code' => $this->fakeProvider->code,
+            'device_name' => 'Test Device',
         ]);
 
         $response
             ->assertCreated()
             ->assertJson([
                 'message' => 'تم إنشاء الحساب بنجاح.',
+                'token_type' => 'Bearer',
+            ])
+            ->assertJsonStructure([
+                'message',
+                'token_type',
+                'token',
+                'user',
             ]);
 
         $this->assertDatabaseHas('users', [
@@ -105,13 +113,11 @@ class AuthControllerTest extends TestCase
         )->first();
 
         $this->assertNotNull($user);
-
-        $this->assertTrue(
-            $user->hasRole('user')
-        );
+        $this->assertTrue($user->hasRole('user'));
+        $this->assertCount(1, $user->tokens);
     }
 
-    public function test_can_login_with_whatsapp_otp(): void
+    public function test_can_login_with_whatsapp_otp_and_receive_token(): void
     {
         $user = User::factory()->create([
             'phone' => '967700000003',
@@ -130,18 +136,28 @@ class AuthControllerTest extends TestCase
             'phone' => '967700000003',
             'channel' => 'whatsapp',
             'code' => $this->fakeProvider->code,
+            'device_name' => 'Android',
         ]);
 
         $response
             ->assertOk()
             ->assertJson([
                 'message' => 'تم تسجيل الدخول بنجاح.',
+                'token_type' => 'Bearer',
+            ])
+            ->assertJsonStructure([
+                'message',
+                'token_type',
+                'token',
+                'user',
             ]);
+
+        $this->assertCount(1, $user->fresh()->tokens);
     }
 
-    public function test_can_login_with_password(): void
+    public function test_can_login_with_password_and_receive_token(): void
     {
-        User::factory()->create([
+        $user = User::factory()->create([
             'phone' => '967700000004',
             'password' => 'password123',
             'status' => 'active',
@@ -150,13 +166,23 @@ class AuthControllerTest extends TestCase
         $response = $this->postJson('/api/v1/auth/login/password', [
             'phone' => '967700000004',
             'password' => 'password123',
+            'device_name' => 'iPhone',
         ]);
 
         $response
             ->assertOk()
             ->assertJson([
                 'message' => 'تم تسجيل الدخول بنجاح.',
+                'token_type' => 'Bearer',
+            ])
+            ->assertJsonStructure([
+                'message',
+                'token_type',
+                'token',
+                'user',
             ]);
+
+        $this->assertCount(1, $user->fresh()->tokens);
     }
 
     public function test_wrong_password_returns_validation_error(): void
@@ -221,6 +247,8 @@ class AuthControllerTest extends TestCase
             'status' => 'active',
         ]);
 
+        $user->createToken('Old Device');
+
         app(OtpService::class)->send(
             'whatsapp',
             '967700000008',
@@ -239,7 +267,7 @@ class AuthControllerTest extends TestCase
         $response
             ->assertOk()
             ->assertJson([
-                'message' => 'تم تغيير كلمة المرور بنجاح.',
+                'message' => 'تم تغيير كلمة المرور بنجاح. يرجى تسجيل الدخول مرة أخرى.',
             ]);
 
         $user->refresh();
@@ -250,6 +278,8 @@ class AuthControllerTest extends TestCase
                 $user->password
             )
         );
+
+        $this->assertCount(0, $user->tokens);
     }
 
     public function test_authenticated_user_can_get_profile(): void

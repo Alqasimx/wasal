@@ -54,6 +54,7 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'channel' => ['required', 'in:whatsapp,email'],
             'code' => ['required', 'digits:6'],
+            'device_name' => ['nullable', 'string', 'max:255'],
         ]);
 
         $user = $this->authService->registerWithOtp(
@@ -66,8 +67,14 @@ class AuthController extends Controller
             $data['whatsapp_phone'] ?? null
         );
 
+        $token = $user->createToken(
+            $data['device_name'] ?? 'api'
+        )->plainTextToken;
+
         return response()->json([
             'message' => 'تم إنشاء الحساب بنجاح.',
+            'token_type' => 'Bearer',
+            'token' => $token,
             'user' => $user,
         ], 201);
     }
@@ -79,6 +86,7 @@ class AuthController extends Controller
             'channel' => ['required', 'in:whatsapp,email'],
             'email' => ['nullable', 'email'],
             'code' => ['required', 'digits:6'],
+            'device_name' => ['nullable', 'string', 'max:255'],
         ]);
 
         $user = $this->authService->loginWithOtp(
@@ -88,8 +96,14 @@ class AuthController extends Controller
             $data['email'] ?? null
         );
 
+        $token = $user->createToken(
+            $data['device_name'] ?? 'api'
+        )->plainTextToken;
+
         return response()->json([
             'message' => 'تم تسجيل الدخول بنجاح.',
+            'token_type' => 'Bearer',
+            'token' => $token,
             'user' => $user,
         ]);
     }
@@ -99,6 +113,7 @@ class AuthController extends Controller
         $data = $request->validate([
             'phone' => ['required', 'string', 'max:30'],
             'password' => ['required', 'string'],
+            'device_name' => ['nullable', 'string', 'max:255'],
         ]);
 
         $user = $this->authService->loginWithPassword(
@@ -106,8 +121,14 @@ class AuthController extends Controller
             $data['password']
         );
 
+        $token = $user->createToken(
+            $data['device_name'] ?? 'api'
+        )->plainTextToken;
+
         return response()->json([
             'message' => 'تم تسجيل الدخول بنجاح.',
+            'token_type' => 'Bearer',
+            'token' => $token,
             'user' => $user,
         ]);
     }
@@ -122,7 +143,7 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        $this->authService->resetPasswordWithOtp(
+        $user = $this->authService->resetPasswordWithOtp(
             $data['phone'],
             $data['channel'],
             $data['code'],
@@ -130,16 +151,16 @@ class AuthController extends Controller
             $data['email'] ?? null
         );
 
+        $user->tokens()->delete();
+
         return response()->json([
-            'message' => 'تم تغيير كلمة المرور بنجاح.',
+            'message' => 'تم تغيير كلمة المرور بنجاح. يرجى تسجيل الدخول مرة أخرى.',
         ]);
     }
 
     public function logout(Request $request): JsonResponse
     {
-        $user = $request->user();
-
-        $accessToken = $user?->currentAccessToken();
+        $accessToken = $request->user()?->currentAccessToken();
 
         if (
             $accessToken &&
