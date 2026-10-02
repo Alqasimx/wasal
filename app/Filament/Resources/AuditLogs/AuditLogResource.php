@@ -9,6 +9,8 @@ use App\Filament\Resources\AuditLogs\Tables\AuditLogsTable;
 use App\Models\AuditLog;
 use App\Models\Bank;
 use App\Models\Currency;
+use App\Models\RentDueItem;
+use App\Models\Tenancy;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -56,21 +58,9 @@ class AuditLogResource extends Resource
             return false;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Full Audit Permission
-        |--------------------------------------------------------------------------
-        */
-
         if ($user->can('audit_logs.view')) {
             return true;
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Financial Audit Permission
-        |--------------------------------------------------------------------------
-        */
 
         if (! $user->can('audit_logs.financial_view')) {
             return false;
@@ -78,10 +68,7 @@ class AuditLogResource extends Resource
 
         return in_array(
             $record->entity_type,
-            [
-                Bank::class,
-                Currency::class,
-            ],
+            self::financialEntityTypes(),
             true
         );
     }
@@ -96,37 +83,16 @@ class AuditLogResource extends Resource
             return $query->whereRaw('1 = 0');
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | System administrators / full audit viewers
-        |--------------------------------------------------------------------------
-        */
-
         if ($user->can('audit_logs.view')) {
             return $query;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Financial audit viewers
-        |--------------------------------------------------------------------------
-        */
-
         if ($user->can('audit_logs.financial_view')) {
             return $query->whereIn(
                 'entity_type',
-                [
-                    Bank::class,
-                    Currency::class,
-                ]
+                self::financialEntityTypes()
             );
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | No Audit Permission
-        |--------------------------------------------------------------------------
-        */
 
         return $query->whereRaw('1 = 0');
     }
@@ -191,6 +157,16 @@ class AuditLogResource extends Resource
         return [
             'index' => ListAuditLogs::route('/'),
             'view' => ViewAuditLog::route('/{record}'),
+        ];
+    }
+
+    private static function financialEntityTypes(): array
+    {
+        return [
+            Bank::class,
+            Currency::class,
+            Tenancy::class,
+            RentDueItem::class,
         ];
     }
 }
