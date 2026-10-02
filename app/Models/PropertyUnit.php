@@ -20,4 +20,6 @@ class PropertyUnit extends Model
 
     public function property(): BelongsTo { return $this->belongsTo(Property::class); }
     public function attributeValues(): MorphMany { return $this->morphMany(PropertyAttributeValue::class, 'attributable'); }
+
+    public function tenancies(): \Illuminate\Database\Eloquent\Relations\HasMany { return $this->hasMany(Tenancy::class); }
 }

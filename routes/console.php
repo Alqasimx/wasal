@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('wasal:notify-due-tasks')->hourly();
+Schedule::command('wasal:notify-due-rent-payments')->dailyAt('08:00');
