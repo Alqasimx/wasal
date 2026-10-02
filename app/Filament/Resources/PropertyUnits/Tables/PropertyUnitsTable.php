@@ -18,8 +18,8 @@ class PropertyUnitsTable
                     ->label('الصورة')
                     ->state(fn ($record): ?string => $record->property?->gallery[0] ?? null)
                     ->disk('public')
-                    ->height(68)
-                    ->width(96),
+                    ->height(96)
+                    ->width(136),
 
                 TextColumn::make('property.internal_code')
                     ->label('العقار')
