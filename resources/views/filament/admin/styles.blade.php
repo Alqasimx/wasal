@@ -1,22 +1,311 @@
 <style>
+    :root {
+        --wasal-gold: #d4af37;
+        --wasal-gold-strong: #b58b16;
+        --wasal-gold-soft: #f3e7bd;
+        --wasal-gold-faint: #fbf6e8;
+        --wasal-ink: #17150f;
+        --wasal-ink-soft: #2a271f;
+        --wasal-warm-bg: #f7f4ec;
+        --wasal-card: #fffdf8;
+        --wasal-border: #e8e0cf;
+        --wasal-muted: #756f63;
+        --wasal-shadow: 0 12px 32px rgba(57, 45, 14, .07);
+        --wasal-shadow-soft: 0 5px 18px rgba(57, 45, 14, .05);
+    }
+
+    .dark {
+        --wasal-warm-bg: #0f0f0d;
+        --wasal-card: #171713;
+        --wasal-border: #302b20;
+        --wasal-ink: #f7f2e7;
+        --wasal-ink-soft: #e6dec9;
+        --wasal-muted: #aaa294;
+        --wasal-gold-faint: #211d13;
+        --wasal-shadow: 0 12px 32px rgba(0, 0, 0, .24);
+        --wasal-shadow-soft: 0 5px 18px rgba(0, 0, 0, .2);
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body,
+    .fi-body {
+        background: var(--wasal-warm-bg);
+        color: var(--wasal-ink);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, Arial, sans-serif;
+    }
+
+    /* ---------- Main layout ---------- */
+
     .fi-main-ctn,
     .fi-page {
         max-width: 100% !important;
     }
 
-    .fi-ta-ctn {
+    .fi-main {
+        background:
+            radial-gradient(circle at 18% 0%, rgba(212, 175, 55, .06), transparent 30rem),
+            var(--wasal-warm-bg);
+    }
+
+    .fi-page {
+        padding-bottom: 2rem;
+    }
+
+    .fi-header-heading,
+    .fi-page-header-heading {
+        color: var(--wasal-ink);
+        font-weight: 850 !important;
+        letter-spacing: -.02em;
+    }
+
+    .fi-header-subheading,
+    .fi-page-header-subheading {
+        color: var(--wasal-muted);
+    }
+
+    /* ---------- Top bar ---------- */
+
+    .fi-topbar {
+        border-bottom: 1px solid var(--wasal-border);
+        background: color-mix(in srgb, var(--wasal-card) 94%, transparent);
+        backdrop-filter: blur(14px);
+        box-shadow: 0 1px 0 rgba(212, 175, 55, .08);
+    }
+
+    .fi-topbar nav {
+        min-height: 4.25rem;
+    }
+
+    /* ---------- Sidebar ---------- */
+
+    .fi-sidebar {
+        background:
+            linear-gradient(180deg, #18160f 0%, #11100c 52%, #0d0c09 100%) !important;
+        border-inline-start: 1px solid rgba(212, 175, 55, .18);
+        box-shadow: -10px 0 36px rgba(0, 0, 0, .08);
+    }
+
+    .fi-sidebar-header {
+        background: rgba(255, 255, 255, .015) !important;
+        border-bottom: 1px solid rgba(212, 175, 55, .16);
+    }
+
+    .fi-sidebar-nav {
+        scrollbar-color: rgba(212, 175, 55, .4) transparent;
+    }
+
+    .fi-sidebar-group-label,
+    .fi-sidebar-group-button {
+        color: #b9b09b !important;
+        font-weight: 750;
+    }
+
+    .fi-sidebar-item-button {
+        border: 1px solid transparent;
+        border-radius: 12px !important;
+        color: #ddd6c8 !important;
+        transition:
+            background-color .18s ease,
+            border-color .18s ease,
+            color .18s ease,
+            transform .18s ease;
+    }
+
+    .fi-sidebar-item-button:hover {
+        background: rgba(212, 175, 55, .09) !important;
+        border-color: rgba(212, 175, 55, .14);
+        color: #fff8e7 !important;
+        transform: translateX(-2px);
+    }
+
+    .fi-sidebar a[aria-current="page"],
+    .fi-sidebar-item.fi-active > .fi-sidebar-item-button {
+        background: linear-gradient(135deg, #e1c057, #c99f24) !important;
+        border-color: rgba(255, 255, 255, .14);
+        box-shadow: 0 8px 20px rgba(212, 175, 55, .2);
+        color: #17130a !important;
+    }
+
+    .fi-sidebar a[aria-current="page"] *,
+    .fi-sidebar-item.fi-active > .fi-sidebar-item-button * {
+        color: #17130a !important;
+    }
+
+    .fi-sidebar-item-icon {
+        color: #a99f8d;
+    }
+
+    .fi-sidebar-item-button:hover .fi-sidebar-item-icon {
+        color: var(--wasal-gold);
+    }
+
+    /* ---------- Dashboard / cards ---------- */
+
+    .fi-wi-stats-overview-stat,
+    .fi-section,
+    .fi-fo-section {
+        position: relative;
+        border: 1px solid var(--wasal-border) !important;
+        border-radius: 18px !important;
+        background: linear-gradient(145deg, var(--wasal-card), var(--wasal-gold-faint)) !important;
+        box-shadow: var(--wasal-shadow-soft) !important;
         overflow: hidden;
     }
 
+    .fi-wi-stats-overview-stat::before {
+        content: "";
+        position: absolute;
+        inset-inline: 0;
+        top: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, var(--wasal-gold), transparent);
+        opacity: .9;
+    }
+
+    .fi-wi-stats-overview-stat-value {
+        color: var(--wasal-ink);
+        font-weight: 850 !important;
+    }
+
+    .fi-wi-stats-overview-stat-description {
+        color: var(--wasal-muted);
+    }
+
+    /* ---------- Forms / search ---------- */
+
+    .fi-input-wrp,
+    .fi-select-input {
+        border-radius: 12px !important;
+        border-color: var(--wasal-border) !important;
+        background: var(--wasal-card);
+        box-shadow: none !important;
+        transition:
+            border-color .18s ease,
+            box-shadow .18s ease;
+    }
+
+    .fi-input-wrp:focus-within {
+        border-color: rgba(212, 175, 55, .8) !important;
+        box-shadow: 0 0 0 3px rgba(212, 175, 55, .12) !important;
+    }
+
+    .fi-btn {
+        border-radius: 11px !important;
+        font-weight: 750;
+        transition:
+            transform .16s ease,
+            box-shadow .16s ease;
+    }
+
+    .fi-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    /* ---------- All Filament tables ---------- */
+
+    .fi-ta-ctn {
+        border: 1px solid var(--wasal-border) !important;
+        border-radius: 18px !important;
+        background: var(--wasal-card) !important;
+        box-shadow: var(--wasal-shadow) !important;
+        overflow: hidden;
+    }
+
+    .fi-ta-header-ctn,
+    .fi-ta-header-toolbar {
+        background: var(--wasal-card);
+        border-bottom-color: var(--wasal-border) !important;
+    }
+
+    .fi-ta-table {
+        border-collapse: separate;
+        border-spacing: 0;
+        background: var(--wasal-card);
+    }
+
+    .fi-ta-table thead {
+        background: linear-gradient(180deg, #f6edd2 0%, #f2e6c3 100%);
+    }
+
+    .dark .fi-ta-table thead {
+        background: linear-gradient(180deg, #262116 0%, #211d13 100%);
+    }
+
+    .fi-ta-table thead th {
+        min-height: 54px;
+        padding-top: .95rem !important;
+        padding-bottom: .95rem !important;
+        border-bottom: 1px solid rgba(181, 139, 22, .22) !important;
+        color: #403717 !important;
+        font-size: .83rem;
+        font-weight: 850 !important;
+        letter-spacing: .01em;
+        white-space: nowrap;
+    }
+
+    .dark .fi-ta-table thead th {
+        color: #e5cf82 !important;
+    }
+
     .fi-ta-table tbody tr {
-        min-height: 82px;
+        min-height: 76px;
+        background: var(--wasal-card);
+        transition:
+            background-color .16s ease,
+            box-shadow .16s ease;
+    }
+
+    .fi-ta-table tbody tr:nth-child(even) {
+        background: color-mix(in srgb, var(--wasal-card) 95%, var(--wasal-gold) 5%);
+    }
+
+    .fi-ta-table tbody tr:hover {
+        background: color-mix(in srgb, var(--wasal-card) 90%, var(--wasal-gold) 10%) !important;
+        box-shadow: inset 3px 0 0 rgba(212, 175, 55, .72);
     }
 
     .fi-ta-table tbody td {
-        padding-top: .8rem;
-        padding-bottom: .8rem;
+        padding-top: .95rem !important;
+        padding-bottom: .95rem !important;
         vertical-align: middle;
+        border-bottom: 1px solid color-mix(in srgb, var(--wasal-border) 72%, transparent) !important;
+        color: var(--wasal-ink-soft);
     }
+
+    .fi-ta-table tbody tr:last-child td {
+        border-bottom: 0 !important;
+    }
+
+    .fi-ta-text-item-label,
+    .fi-ta-text {
+        line-height: 1.55;
+    }
+
+    .fi-ta-actions {
+        gap: .4rem;
+    }
+
+    .fi-ta-actions .fi-link,
+    .fi-ta-actions a {
+        font-weight: 750;
+    }
+
+    .fi-badge {
+        border-radius: 999px !important;
+        font-weight: 750;
+        border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+        box-shadow: none;
+    }
+
+    .fi-ta-empty-state {
+        padding-block: 3.5rem !important;
+        color: var(--wasal-muted);
+    }
+
+    /* ---------- Property images ---------- */
 
     .fi-ta-image {
         width: 148px !important;
@@ -24,17 +313,91 @@
         max-width: 148px !important;
         max-height: 104px !important;
         object-fit: cover;
-        border-radius: 14px;
+        border: 1px solid rgba(212, 175, 55, .22);
+        border-radius: 14px !important;
+        box-shadow: 0 5px 14px rgba(31, 24, 8, .1);
+    }
+
+    /* ---------- Pagination ---------- */
+
+    .fi-pagination {
+        background: var(--wasal-card);
+        border-top-color: var(--wasal-border) !important;
+    }
+
+    .fi-pagination-item {
+        border-radius: 9px !important;
+    }
+
+    /* ---------- Dropdowns / modals ---------- */
+
+    .fi-dropdown-panel,
+    .fi-modal-window {
+        border: 1px solid var(--wasal-border) !important;
+        border-radius: 16px !important;
+        background: var(--wasal-card) !important;
+        box-shadow: 0 18px 48px rgba(20, 17, 9, .16) !important;
+    }
+
+    /* ---------- Scrollbars ---------- */
+
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(181, 139, 22, .48) transparent;
+    }
+
+    *::-webkit-scrollbar {
+        width: 9px;
+        height: 9px;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: rgba(181, 139, 22, .42);
+        background-clip: padding-box;
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+        background: rgba(181, 139, 22, .62);
+        background-clip: padding-box;
+    }
+
+    /* ---------- Responsive tables ---------- */
+
+    @media (max-width: 1024px) {
+        .fi-ta-table {
+            min-width: 880px;
+        }
+
+        .fi-ta-content {
+            overflow-x: auto;
+        }
     }
 
     @media (max-width: 768px) {
+        .fi-page {
+            padding-inline: .65rem;
+        }
+
+        .fi-ta-ctn,
+        .fi-section,
+        .fi-fo-section,
+        .fi-wi-stats-overview-stat {
+            border-radius: 14px !important;
+        }
+
         .fi-ta-table {
-            min-width: 980px;
+            min-width: 940px;
         }
 
         .fi-ta-image {
             width: 116px !important;
             height: 84px !important;
+        }
+
+        .fi-sidebar-item-button:hover {
+            transform: none;
         }
     }
 </style>
