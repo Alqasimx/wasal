@@ -8,7 +8,13 @@ class PropertyUnitForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Select::make('property_id')->label('العقار')->relationship('property', 'internal_code')->searchable()->preload()->required(),
+            Select::make('property_id')
+                ->label('العقار (حسب الرمز الداخلي)')
+                ->relationship('property', 'internal_code')
+                ->getOptionLabelFromRecordUsing(fn ($record): string => $record->internal_code.' — '.$record->title_ar)
+                ->searchable(['internal_code', 'title_ar'])
+                ->preload()
+                ->required(),
             TextInput::make('code')->label('رمز الوحدة')->required(),
             TextInput::make('name')->label('اسم الوحدة')->required(),
             TextInput::make('floor_number')->label('الطابق')->numeric(),

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Properties\Schemas;
 
 use App\Models\District;
 use App\Models\Neighborhood;
+use App\Models\Property;
 use App\Models\Street;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -19,7 +20,12 @@ class PropertyForm
     {
         return $schema->components([
             Select::make('property_type_id')->label('نوع العقار')->relationship('propertyType', 'name_ar')->searchable()->preload()->required(),
-            TextInput::make('internal_code')->label('الرمز الداخلي')->required()->unique(ignoreRecord: true),
+            TextInput::make('internal_code')
+                ->label('الرمز الداخلي')
+                ->helperText('اختاري رمزًا مقترحًا من القائمة أو اكتبي رمزًا مخصصًا. يجب أن يكون فريدًا.')
+                ->datalist(fn (): array => self::internalCodeSuggestions())
+                ->required()
+                ->unique(ignoreRecord: true),
             TextInput::make('title_ar')->label('العنوان بالعربية')->required(),
             TextInput::make('title_en')->label('العنوان بالإنجليزية'),
             Textarea::make('description_ar')->label('الوصف بالعربية')->rows(3),
@@ -82,5 +88,24 @@ class PropertyForm
                 ->maxFiles(20)
                 ->maxSize(10240),
         ]);
+    }
+
+    /** @return array<int, string> */
+    private static function internalCodeSuggestions(): array
+    {
+        $usedCodes = Property::query()->pluck('internal_code')->flip();
+        $suggestions = [];
+
+        foreach (['ADEN', 'PROP', 'VILLA', 'APT', 'SHOP', 'OFFICE', 'LAND'] as $prefix) {
+            for ($number = 1; $number <= 10; $number++) {
+                $code = sprintf('%s-%03d', $prefix, $number);
+
+                if (! isset($usedCodes[$code])) {
+                    $suggestions[] = $code;
+                }
+            }
+        }
+
+        return $suggestions;
     }
 }

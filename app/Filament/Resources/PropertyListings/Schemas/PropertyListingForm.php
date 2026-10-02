@@ -15,7 +15,13 @@ class PropertyListingForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Select::make('property_id')->label('العقار')->relationship('property', 'internal_code')->searchable()->preload()->required(),
+            Select::make('property_id')
+                ->label('العقار (حسب الرمز الداخلي)')
+                ->relationship('property', 'internal_code')
+                ->getOptionLabelFromRecordUsing(fn ($record): string => $record->internal_code.' — '.$record->title_ar)
+                ->searchable(['internal_code', 'title_ar'])
+                ->preload()
+                ->required(),
             TextInput::make('listing_number')->label('رقم الإعلان')->required()->unique(ignoreRecord: true),
             Select::make('purpose')->label('الغرض')->options(['sale' => 'بيع', 'rent' => 'إيجار'])->required(),
             TextInput::make('price')->label('السعر')->numeric()->required(),

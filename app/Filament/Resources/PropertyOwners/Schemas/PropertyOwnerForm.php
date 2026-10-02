@@ -10,7 +10,13 @@ class PropertyOwnerForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Select::make('property_id')->label('العقار')->relationship('property', 'internal_code')->searchable()->preload()->required(),
+            Select::make('property_id')
+                ->label('العقار (حسب الرمز الداخلي)')
+                ->relationship('property', 'internal_code')
+                ->getOptionLabelFromRecordUsing(fn ($record): string => $record->internal_code.' — '.$record->title_ar)
+                ->searchable(['internal_code', 'title_ar'])
+                ->preload()
+                ->required(),
             Select::make('user_id')->label('المستخدم المالك')->relationship('user', 'name')->searchable()->preload(),
             TextInput::make('external_owner_name')->label('اسم المالك الخارجي'),
             TextInput::make('ownership_percentage')->label('نسبة الملكية')->numeric()->minValue(0)->maxValue(100),
