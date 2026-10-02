@@ -13,7 +13,9 @@ return [
     'temporary_file_upload' => [
         'disk' => env('LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK', 'local'),
         'directory' => 'livewire-tmp',
-        'rules' => 'file|mimes:jpg,jpeg,png,webp|max:10240',
+        // Filament performs the final image validation; Livewire only needs
+        // to accept the temporary file and enforce the upload-size limit.
+        'rules' => 'file|max:10240',
         'middleware' => 'throttle:60,1',
     ],
 ];
