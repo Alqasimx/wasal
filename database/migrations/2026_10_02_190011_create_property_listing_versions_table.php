@@ -8,6 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Preserve tables created by an earlier local build and record this migration safely.
+        if (Schema::hasTable('property_listing_versions')) {
+            return;
+        }
+
         Schema::create('property_listing_versions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('property_listing_id')->constrained()->cascadeOnDelete();

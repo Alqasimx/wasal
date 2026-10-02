@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasColumn('property_listings', 'featured_until')) {
+            return;
+        }
+
         Schema::table('property_listings', function (Blueprint $table) {
             $table->timestamp('featured_until')->nullable()->after('expires_at');
         });
