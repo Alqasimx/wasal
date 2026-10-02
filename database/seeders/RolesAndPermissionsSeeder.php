@@ -54,6 +54,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'property_owners.view',
             'property_owners.manage',
 
+            'property_requests.view',
+            'property_requests.manage',
+
             'tasks.view',
             'tasks.manage',
 
@@ -128,6 +131,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'property_units.manage',
                 'property_owners.view',
                 'property_owners.manage',
+                'property_requests.view',
+                'property_requests.manage',
                 'tasks.view',
                 'tasks.manage',
             ]);
@@ -143,6 +148,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'property_listings.view',
                 'property_units.view',
                 'property_owners.view',
+                'property_requests.view',
                 'tasks.view',
                 'tasks.manage',
             ]);
