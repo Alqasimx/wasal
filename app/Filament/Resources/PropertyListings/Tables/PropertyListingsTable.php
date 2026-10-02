@@ -7,8 +7,8 @@ use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -17,48 +17,110 @@ class PropertyListingsTable
 {
     public static function configure(Table $table): Table
     {
-        return $table->defaultSort('created_at', 'desc')
+        return $table
+            ->defaultSort('created_at', 'desc')
             ->columns([
                 ImageColumn::make('property_image')
                     ->label('الصورة')
                     ->state(fn (PropertyListing $record): ?string => $record->property?->gallery[0] ?? null)
                     ->disk('public')
-                    ->height(104)
-                    ->width(148),
-                TextColumn::make('listing_number')->label('رقم الإعلان')->searchable()->sortable(),
-                TextColumn::make('public_title')->label('العنوان')->searchable(),
-                TextColumn::make('property.internal_code')->label('العقار'),
-                TextColumn::make('property.city.name_ar')->label('المدينة'),
-                TextColumn::make('property.district.name_ar')->label('المديرية'),
-                TextColumn::make('purpose')->label('الغرض')->formatStateUsing(fn (string $state): string => $state === 'rent' ? 'إيجار' : 'بيع')->badge(),
-                TextColumn::make('price')->label('السعر')->numeric()->sortable(),
-                TextColumn::make('price_period')->label('الفترة')->toggleable(),
-                TextColumn::make('status')->label('الحالة')->badge(),
-                TextColumn::make('reviewer.name')->label('المراجع'),
-                IconColumn::make('share_enabled')->label('مشاركة')->boolean(),
-                TextColumn::make('share_count')->label('المشاركات')->sortable(),
+                    ->height(68)
+                    ->width(96),
+
+                TextColumn::make('listing_number')
+                    ->label('رقم الإعلان')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('public_title')
+                    ->label('العنوان')
+                    ->searchable()
+                    ->limit(26)
+                    ->wrap(),
+
+                TextColumn::make('property.internal_code')
+                    ->label('العقار')
+                    ->placeholder('—'),
+
+                TextColumn::make('purpose')
+                    ->label('الغرض')
+                    ->formatStateUsing(fn (string $state): string => $state === 'rent' ? 'إيجار' : 'بيع')
+                    ->badge(),
+
+                TextColumn::make('price')
+                    ->label('السعر')
+                    ->numeric()
+                    ->sortable(),
+
+                TextColumn::make('status')
+                    ->label('الحالة')
+                    ->badge()
+                    ->sortable(),
+
+                TextColumn::make('property.city.name_ar')
+                    ->label('المدينة')
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('property.district.name_ar')
+                    ->label('المديرية')
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('price_period')
+                    ->label('الفترة')
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('reviewer.name')
+                    ->label('المراجع')
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                IconColumn::make('share_enabled')
+                    ->label('مشاركة')
+                    ->boolean()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('share_count')
+                    ->label('الزيارات')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('share_url')
                     ->label('رابط المشاركة')
                     ->state(fn (PropertyListing $record): ?string => $record->share_enabled && $record->share_token
                         ? url('/api/v1/shared-offers/'.$record->share_token)
                         : null)
                     ->copyable()
-                    ->limit(35),
-            ])->striped()->defaultPaginationPageOption(10)
-            ->filters([
-                SelectFilter::make('status')->label('الحالة')->options([
-                    PropertyListing::STATUS_DRAFT => 'مسودة',
-                    PropertyListing::STATUS_PENDING_REVIEW => 'قيد المراجعة',
-                    PropertyListing::STATUS_CHANGES_REQUESTED => 'مطلوب تعديل',
-                    PropertyListing::STATUS_PUBLISHED => 'منشور',
-                    PropertyListing::STATUS_REJECTED => 'مرفوض',
-                    PropertyListing::STATUS_SOLD => 'تم البيع',
-                    PropertyListing::STATUS_RENTED => 'تم التأجير',
-                ]),
-                SelectFilter::make('purpose')->label('الغرض')->options(['sale' => 'بيع', 'rent' => 'إيجار']),
+                    ->limit(28)
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->filters([
+                SelectFilter::make('status')
+                    ->label('الحالة')
+                    ->options([
+                        PropertyListing::STATUS_DRAFT => 'مسودة',
+                        PropertyListing::STATUS_PENDING_REVIEW => 'قيد المراجعة',
+                        PropertyListing::STATUS_CHANGES_REQUESTED => 'مطلوب تعديل',
+                        PropertyListing::STATUS_PUBLISHED => 'منشور',
+                        PropertyListing::STATUS_REJECTED => 'مرفوض',
+                        PropertyListing::STATUS_SOLD => 'تم البيع',
+                        PropertyListing::STATUS_RENTED => 'تم التأجير',
+                    ]),
+
+                SelectFilter::make('purpose')
+                    ->label('الغرض')
+                    ->options([
+                        'sale' => 'بيع',
+                        'rent' => 'إيجار',
+                    ]),
+            ])
+            ->striped()
+            ->defaultPaginationPageOption(10)
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->label('تعديل'),
                 self::submitForReviewAction(),
                 self::approveAction(),
                 self::requestChangesAction(),
@@ -80,13 +142,18 @@ class PropertyListingsTable
                 && in_array($record->status, [PropertyListing::STATUS_DRAFT, PropertyListing::STATUS_CHANGES_REQUESTED], true))
             ->action(function (PropertyListing $record): void {
                 $record->update(['status' => PropertyListing::STATUS_PENDING_REVIEW]);
+
                 $record->versions()->create([
                     'version_number' => ((int) $record->versions()->max('version_number')) + 1,
                     'payload' => $record->fresh()->toArray(),
                     'status' => 'pending',
                     'submitted_by_user_id' => auth()->id(),
                 ]);
-                Notification::make()->success()->title('تم إرسال الإعلان للمراجعة')->send();
+
+                Notification::make()
+                    ->success()
+                    ->title('تم إرسال الإعلان للمراجعة')
+                    ->send();
             });
     }
 
@@ -95,7 +162,11 @@ class PropertyListingsTable
         return Action::make('approveAndPublish')
             ->label('اعتماد ونشر')
             ->color('success')
-            ->form([Textarea::make('review_notes')->label('ملاحظات الاعتماد')->rows(3)])
+            ->form([
+                Textarea::make('review_notes')
+                    ->label('ملاحظات الاعتماد')
+                    ->rows(3),
+            ])
             ->visible(fn (PropertyListing $record): bool => self::canReview()
                 && $record->status === PropertyListing::STATUS_PENDING_REVIEW)
             ->action(function (PropertyListing $record, array $data): void {
@@ -105,13 +176,22 @@ class PropertyListingsTable
                     'reviewed_by_user_id' => auth()->id(),
                     'reviewed_at' => now(),
                 ]);
-                $record->versions()->where('status', 'pending')->latest('version_number')->first()?->update([
-                    'status' => 'approved',
-                    'reviewed_by_user_id' => auth()->id(),
-                    'review_notes' => $data['review_notes'] ?? null,
-                    'reviewed_at' => now(),
-                ]);
-                Notification::make()->success()->title('تم اعتماد الإعلان ونشره')->send();
+
+                $record->versions()
+                    ->where('status', 'pending')
+                    ->latest('version_number')
+                    ->first()
+                    ?->update([
+                        'status' => 'approved',
+                        'reviewed_by_user_id' => auth()->id(),
+                        'review_notes' => $data['review_notes'] ?? null,
+                        'reviewed_at' => now(),
+                    ]);
+
+                Notification::make()
+                    ->success()
+                    ->title('تم اعتماد الإعلان ونشره')
+                    ->send();
             });
     }
 
@@ -120,7 +200,12 @@ class PropertyListingsTable
         return Action::make('requestChanges')
             ->label('طلب تعديلات')
             ->color('warning')
-            ->form([Textarea::make('review_notes')->label('سبب طلب التعديلات')->required()->rows(4)])
+            ->form([
+                Textarea::make('review_notes')
+                    ->label('سبب طلب التعديلات')
+                    ->required()
+                    ->rows(4),
+            ])
             ->visible(fn (PropertyListing $record): bool => self::canReview()
                 && $record->status === PropertyListing::STATUS_PENDING_REVIEW)
             ->action(function (PropertyListing $record, array $data): void {
@@ -129,13 +214,22 @@ class PropertyListingsTable
                     'reviewed_by_user_id' => auth()->id(),
                     'reviewed_at' => now(),
                 ]);
-                $record->versions()->where('status', 'pending')->latest('version_number')->first()?->update([
-                    'status' => 'rejected',
-                    'reviewed_by_user_id' => auth()->id(),
-                    'review_notes' => $data['review_notes'],
-                    'reviewed_at' => now(),
-                ]);
-                Notification::make()->success()->title('تم إرسال طلب التعديلات')->send();
+
+                $record->versions()
+                    ->where('status', 'pending')
+                    ->latest('version_number')
+                    ->first()
+                    ?->update([
+                        'status' => 'rejected',
+                        'reviewed_by_user_id' => auth()->id(),
+                        'review_notes' => $data['review_notes'],
+                        'reviewed_at' => now(),
+                    ]);
+
+                Notification::make()
+                    ->success()
+                    ->title('تم إرسال طلب التعديلات')
+                    ->send();
             });
     }
 
@@ -145,7 +239,12 @@ class PropertyListingsTable
             ->label('رفض الإعلان')
             ->color('danger')
             ->requiresConfirmation()
-            ->form([Textarea::make('review_notes')->label('سبب الرفض')->required()->rows(4)])
+            ->form([
+                Textarea::make('review_notes')
+                    ->label('سبب الرفض')
+                    ->required()
+                    ->rows(4),
+            ])
             ->visible(fn (PropertyListing $record): bool => self::canReview()
                 && in_array($record->status, [PropertyListing::STATUS_PENDING_REVIEW, PropertyListing::STATUS_CHANGES_REQUESTED], true))
             ->action(function (PropertyListing $record, array $data): void {
@@ -154,13 +253,22 @@ class PropertyListingsTable
                     'reviewed_by_user_id' => auth()->id(),
                     'reviewed_at' => now(),
                 ]);
-                $record->versions()->where('status', 'pending')->latest('version_number')->first()?->update([
-                    'status' => 'rejected',
-                    'reviewed_by_user_id' => auth()->id(),
-                    'review_notes' => $data['review_notes'],
-                    'reviewed_at' => now(),
-                ]);
-                Notification::make()->success()->title('تم رفض الإعلان')->send();
+
+                $record->versions()
+                    ->where('status', 'pending')
+                    ->latest('version_number')
+                    ->first()
+                    ?->update([
+                        'status' => 'rejected',
+                        'reviewed_by_user_id' => auth()->id(),
+                        'review_notes' => $data['review_notes'],
+                        'reviewed_at' => now(),
+                    ]);
+
+                Notification::make()
+                    ->success()
+                    ->title('تم رفض الإعلان')
+                    ->send();
             });
     }
 }
