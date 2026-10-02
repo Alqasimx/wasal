@@ -24,7 +24,7 @@ class TenancyService
             });
 
         if ($ignoreTenancyId !== null) {
-            $query->whereKeyNot($ignoreTenancyId);
+            $query->where('id', '!=', $ignoreTenancyId);
         }
 
         if ($query->exists()) {
