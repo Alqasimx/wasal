@@ -3,15 +3,16 @@
 namespace App\Filament\Resources\PropertyListings\Tables;
 
 use App\Models\PropertyListing;
+use App\Services\AuditService;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
 
 class PropertyListingsTable
 {
@@ -54,6 +55,19 @@ class PropertyListingsTable
 
                 TextColumn::make('status')
                     ->label('الحالة')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        PropertyListing::STATUS_DRAFT => 'مسودة',
+                        PropertyListing::STATUS_PENDING_REVIEW => 'قيد المراجعة',
+                        PropertyListing::STATUS_CHANGES_REQUESTED => 'مطلوب تعديل',
+                        PropertyListing::STATUS_APPROVED => 'معتمد',
+                        PropertyListing::STATUS_PUBLISHED => 'منشور',
+                        PropertyListing::STATUS_PAUSED => 'موقوف',
+                        PropertyListing::STATUS_REJECTED => 'مرفوض',
+                        PropertyListing::STATUS_EXPIRED => 'منتهي',
+                        PropertyListing::STATUS_SOLD => 'تم البيع',
+                        PropertyListing::STATUS_RENTED => 'تم التأجير',
+                        default => $state,
+                    })
                     ->badge()
                     ->sortable(),
 
@@ -69,11 +83,6 @@ class PropertyListingsTable
 
                 TextColumn::make('price_period')
                     ->label('الفترة')
-                    ->placeholder('—')
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                TextColumn::make('reviewer.name')
-                    ->label('المراجع')
                     ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
 
@@ -101,10 +110,9 @@ class PropertyListingsTable
                     ->label('الحالة')
                     ->options([
                         PropertyListing::STATUS_DRAFT => 'مسودة',
-                        PropertyListing::STATUS_PENDING_REVIEW => 'قيد المراجعة',
-                        PropertyListing::STATUS_CHANGES_REQUESTED => 'مطلوب تعديل',
                         PropertyListing::STATUS_PUBLISHED => 'منشور',
-                        PropertyListing::STATUS_REJECTED => 'مرفوض',
+                        PropertyListing::STATUS_PAUSED => 'موقوف',
+                        PropertyListing::STATUS_EXPIRED => 'منتهي',
                         PropertyListing::STATUS_SOLD => 'تم البيع',
                         PropertyListing::STATUS_RENTED => 'تم التأجير',
                     ]),
@@ -121,153 +129,93 @@ class PropertyListingsTable
             ->recordActions([
                 EditAction::make()
                     ->label('تعديل'),
-                self::submitForReviewAction(),
-                self::approveAction(),
-                self::requestChangesAction(),
-                self::rejectAction(),
+
+                self::publishAction(),
+                self::pauseAction(),
             ]);
     }
 
-    private static function canReview(): bool
+    private static function publishAction(): Action
     {
-        return (bool) auth()->user()?->can('property_listings.manage');
-    }
-
-    private static function submitForReviewAction(): Action
-    {
-        return Action::make('submitForReview')
-            ->label('إرسال للمراجعة')
-            ->color('warning')
-            ->visible(fn (PropertyListing $record): bool => self::canReview()
-                && in_array($record->status, [PropertyListing::STATUS_DRAFT, PropertyListing::STATUS_CHANGES_REQUESTED], true))
-            ->action(function (PropertyListing $record): void {
-                $record->update(['status' => PropertyListing::STATUS_PENDING_REVIEW]);
-
-                $record->versions()->create([
-                    'version_number' => ((int) $record->versions()->max('version_number')) + 1,
-                    'payload' => $record->fresh()->toArray(),
-                    'status' => 'pending',
-                    'submitted_by_user_id' => auth()->id(),
-                ]);
-
-                Notification::make()
-                    ->success()
-                    ->title('تم إرسال الإعلان للمراجعة')
-                    ->send();
-            });
-    }
-
-    private static function approveAction(): Action
-    {
-        return Action::make('approveAndPublish')
-            ->label('اعتماد ونشر')
+        return Action::make('publish')
+            ->label('نشر')
             ->color('success')
-            ->form([
-                Textarea::make('review_notes')
-                    ->label('ملاحظات الاعتماد')
-                    ->rows(3),
-            ])
-            ->visible(fn (PropertyListing $record): bool => self::canReview()
-                && $record->status === PropertyListing::STATUS_PENDING_REVIEW)
-            ->action(function (PropertyListing $record, array $data): void {
-                $record->update([
-                    'status' => PropertyListing::STATUS_PUBLISHED,
-                    'published_at' => $record->published_at ?? now(),
-                    'reviewed_by_user_id' => auth()->id(),
-                    'reviewed_at' => now(),
-                ]);
-
-                $record->versions()
-                    ->where('status', 'pending')
-                    ->latest('version_number')
-                    ->first()
-                    ?->update([
-                        'status' => 'approved',
-                        'reviewed_by_user_id' => auth()->id(),
-                        'review_notes' => $data['review_notes'] ?? null,
-                        'reviewed_at' => now(),
-                    ]);
-
-                Notification::make()
-                    ->success()
-                    ->title('تم اعتماد الإعلان ونشره')
-                    ->send();
-            });
-    }
-
-    private static function requestChangesAction(): Action
-    {
-        return Action::make('requestChanges')
-            ->label('طلب تعديلات')
-            ->color('warning')
-            ->form([
-                Textarea::make('review_notes')
-                    ->label('سبب طلب التعديلات')
-                    ->required()
-                    ->rows(4),
-            ])
-            ->visible(fn (PropertyListing $record): bool => self::canReview()
-                && $record->status === PropertyListing::STATUS_PENDING_REVIEW)
-            ->action(function (PropertyListing $record, array $data): void {
-                $record->update([
-                    'status' => PropertyListing::STATUS_CHANGES_REQUESTED,
-                    'reviewed_by_user_id' => auth()->id(),
-                    'reviewed_at' => now(),
-                ]);
-
-                $record->versions()
-                    ->where('status', 'pending')
-                    ->latest('version_number')
-                    ->first()
-                    ?->update([
-                        'status' => 'rejected',
-                        'reviewed_by_user_id' => auth()->id(),
-                        'review_notes' => $data['review_notes'],
-                        'reviewed_at' => now(),
-                    ]);
-
-                Notification::make()
-                    ->success()
-                    ->title('تم إرسال طلب التعديلات')
-                    ->send();
-            });
-    }
-
-    private static function rejectAction(): Action
-    {
-        return Action::make('reject')
-            ->label('رفض الإعلان')
-            ->color('danger')
             ->requiresConfirmation()
-            ->form([
-                Textarea::make('review_notes')
-                    ->label('سبب الرفض')
-                    ->required()
-                    ->rows(4),
-            ])
-            ->visible(fn (PropertyListing $record): bool => self::canReview()
-                && in_array($record->status, [PropertyListing::STATUS_PENDING_REVIEW, PropertyListing::STATUS_CHANGES_REQUESTED], true))
-            ->action(function (PropertyListing $record, array $data): void {
-                $record->update([
-                    'status' => PropertyListing::STATUS_REJECTED,
-                    'reviewed_by_user_id' => auth()->id(),
-                    'reviewed_at' => now(),
-                ]);
+            ->visible(fn (PropertyListing $record): bool =>
+                auth()->user()?->can('property_listings.manage')
+                && ! in_array($record->status, [
+                    PropertyListing::STATUS_PUBLISHED,
+                    PropertyListing::STATUS_SOLD,
+                    PropertyListing::STATUS_RENTED,
+                ], true)
+            )
+            ->action(function (PropertyListing $record): void {
+                DB::transaction(function () use ($record): void {
+                    $oldValues = [
+                        'status' => $record->status,
+                        'published_at' => $record->published_at,
+                    ];
 
-                $record->versions()
-                    ->where('status', 'pending')
-                    ->latest('version_number')
-                    ->first()
-                    ?->update([
-                        'status' => 'rejected',
-                        'reviewed_by_user_id' => auth()->id(),
-                        'review_notes' => $data['review_notes'],
-                        'reviewed_at' => now(),
+                    $record->update([
+                        'status' => PropertyListing::STATUS_PUBLISHED,
+                        'published_at' => $record->published_at ?? now(),
                     ]);
+
+                    app(AuditService::class)->forModel(
+                        action: 'property_listing.published',
+                        model: $record,
+                        oldValues: $oldValues,
+                        newValues: [
+                            'status' => $record->fresh()->status,
+                            'published_at' => $record->fresh()->published_at,
+                        ],
+                        actor: auth()->user(),
+                        request: request(),
+                    );
+                });
 
                 Notification::make()
                     ->success()
-                    ->title('تم رفض الإعلان')
+                    ->title('تم نشر الإعلان')
+                    ->send();
+            });
+    }
+
+    private static function pauseAction(): Action
+    {
+        return Action::make('pause')
+            ->label('إيقاف')
+            ->color('warning')
+            ->requiresConfirmation()
+            ->visible(fn (PropertyListing $record): bool =>
+                auth()->user()?->can('property_listings.manage')
+                && $record->status === PropertyListing::STATUS_PUBLISHED
+            )
+            ->action(function (PropertyListing $record): void {
+                DB::transaction(function () use ($record): void {
+                    $oldStatus = $record->status;
+
+                    $record->update([
+                        'status' => PropertyListing::STATUS_PAUSED,
+                    ]);
+
+                    app(AuditService::class)->forModel(
+                        action: 'property_listing.paused',
+                        model: $record,
+                        oldValues: [
+                            'status' => $oldStatus,
+                        ],
+                        newValues: [
+                            'status' => $record->fresh()->status,
+                        ],
+                        actor: auth()->user(),
+                        request: request(),
+                    );
+                });
+
+                Notification::make()
+                    ->success()
+                    ->title('تم إيقاف الإعلان')
                     ->send();
             });
     }
