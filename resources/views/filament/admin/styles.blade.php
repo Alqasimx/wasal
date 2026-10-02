@@ -83,30 +83,46 @@
 
     .fi-sidebar {
         background:
-            linear-gradient(180deg, #18160f 0%, #11100c 52%, #0d0c09 100%) !important;
-        border-inline-start: 1px solid rgba(212, 175, 55, .18);
-        box-shadow: -10px 0 36px rgba(0, 0, 0, .08);
+            linear-gradient(180deg, #fffdf8 0%, #fbf6e8 55%, #f6eed8 100%) !important;
+        border-inline-start: 1px solid #e7dcc1;
+        box-shadow: -8px 0 28px rgba(75, 58, 18, .06);
+    }
+
+    .dark .fi-sidebar {
+        background:
+            linear-gradient(180deg, #1b1913 0%, #16140f 55%, #12110d 100%) !important;
+        border-inline-start-color: rgba(212, 175, 55, .18);
     }
 
     .fi-sidebar-header {
+        background: rgba(255, 255, 255, .55) !important;
+        border-bottom: 1px solid #eadfc6;
+    }
+
+    .dark .fi-sidebar-header {
         background: rgba(255, 255, 255, .015) !important;
-        border-bottom: 1px solid rgba(212, 175, 55, .16);
+        border-bottom-color: rgba(212, 175, 55, .16);
     }
 
     .fi-sidebar-nav {
-        scrollbar-color: rgba(212, 175, 55, .4) transparent;
+        scrollbar-color: rgba(181, 139, 22, .38) transparent;
     }
 
     .fi-sidebar-group-label,
     .fi-sidebar-group-button {
+        color: #756a52 !important;
+        font-weight: 800;
+    }
+
+    .dark .fi-sidebar-group-label,
+    .dark .fi-sidebar-group-button {
         color: #b9b09b !important;
-        font-weight: 750;
     }
 
     .fi-sidebar-item-button {
         border: 1px solid transparent;
         border-radius: 12px !important;
-        color: #ddd6c8 !important;
+        color: #3f392d !important;
         transition:
             background-color .18s ease,
             border-color .18s ease,
@@ -114,18 +130,28 @@
             transform .18s ease;
     }
 
+    .dark .fi-sidebar-item-button {
+        color: #ddd6c8 !important;
+    }
+
     .fi-sidebar-item-button:hover {
+        background: #f3e8c8 !important;
+        border-color: #e3cc86;
+        color: #201c12 !important;
+        transform: translateX(-2px);
+    }
+
+    .dark .fi-sidebar-item-button:hover {
         background: rgba(212, 175, 55, .09) !important;
         border-color: rgba(212, 175, 55, .14);
         color: #fff8e7 !important;
-        transform: translateX(-2px);
     }
 
     .fi-sidebar a[aria-current="page"],
     .fi-sidebar-item.fi-active > .fi-sidebar-item-button {
-        background: linear-gradient(135deg, #e1c057, #c99f24) !important;
-        border-color: rgba(255, 255, 255, .14);
-        box-shadow: 0 8px 20px rgba(212, 175, 55, .2);
+        background: linear-gradient(135deg, #e4c75d, #d4af37) !important;
+        border-color: #cda92f;
+        box-shadow: 0 7px 18px rgba(181, 139, 22, .16);
         color: #17130a !important;
     }
 
@@ -135,11 +161,15 @@
     }
 
     .fi-sidebar-item-icon {
+        color: #8c8065;
+    }
+
+    .dark .fi-sidebar-item-icon {
         color: #a99f8d;
     }
 
     .fi-sidebar-item-button:hover .fi-sidebar-item-icon {
-        color: var(--wasal-gold);
+        color: #9a7411;
     }
 
     /* ---------- Dashboard / cards ---------- */
