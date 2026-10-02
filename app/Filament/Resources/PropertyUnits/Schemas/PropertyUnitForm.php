@@ -1,0 +1,23 @@
+<?php
+namespace App\Filament\Resources\PropertyUnits\Schemas;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Schema;
+class PropertyUnitForm
+{
+    public static function configure(Schema $schema): Schema
+    {
+        return $schema->components([
+            Select::make('property_id')->label('العقار')->relationship('property', 'internal_code')->searchable()->preload()->required(),
+            TextInput::make('code')->label('رمز الوحدة')->required(),
+            TextInput::make('name')->label('اسم الوحدة')->required(),
+            TextInput::make('floor_number')->label('الطابق')->numeric(),
+            TextInput::make('unit_type')->label('نوع الوحدة')->placeholder('شقة / محل / مكتب'),
+            TextInput::make('area')->label('المساحة')->numeric(),
+            TextInput::make('bedrooms')->label('غرف النوم')->numeric(),
+            TextInput::make('bathrooms')->label('الحمامات')->numeric(),
+            TextInput::make('halls')->label('الصالات')->numeric(),
+            Select::make('status')->label('الحالة')->options(['available'=>'متاحة','occupied'=>'مؤجرة/مشغولة','maintenance'=>'تحت الصيانة','unavailable'=>'غير متاحة'])->required()->default('available'),
+        ]);
+    }
+}
