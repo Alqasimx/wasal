@@ -1,19 +1,13 @@
 <?php
 
+// app/Filament/Resources/Cities/Pages/EditCity.php
+
 namespace App\Filament\Resources\Cities\Pages;
 
+use App\Filament\Pages\AuditedEditRecord;
 use App\Filament\Resources\Cities\CityResource;
-use Filament\Actions\DeleteAction;
-use Filament\Resources\Pages\EditRecord;
 
-class EditCity extends EditRecord
+class EditCity extends AuditedEditRecord
 {
     protected static string $resource = CityResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            DeleteAction::make(),
-        ];
-    }
 }

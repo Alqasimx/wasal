@@ -37,22 +37,27 @@ class GovernorateResource extends Resource
 
     protected static ?string $pluralModelLabel = 'المحافظات';
 
-    protected static string|UnitEnum|null $navigationGroup = 'المواقع';
+    protected static string|UnitEnum|null $navigationGroup =
+        'المواقع';
+
 
     public static function form(Schema $schema): Schema
     {
         return GovernorateForm::configure($schema);
     }
 
+
     public static function table(Table $table): Table
     {
         return GovernoratesTable::configure($table);
     }
 
+
     public static function getRelations(): array
     {
         return [];
     }
+
 
     public static function getPages(): array
     {

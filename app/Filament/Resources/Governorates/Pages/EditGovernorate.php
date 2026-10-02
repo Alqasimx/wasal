@@ -1,19 +1,13 @@
 <?php
 
+// app/Filament/Resources/Governorates/Pages/EditGovernorate.php
+
 namespace App\Filament\Resources\Governorates\Pages;
 
+use App\Filament\Pages\AuditedEditRecord;
 use App\Filament\Resources\Governorates\GovernorateResource;
-use Filament\Actions\DeleteAction;
-use Filament\Resources\Pages\EditRecord;
 
-class EditGovernorate extends EditRecord
+class EditGovernorate extends AuditedEditRecord
 {
     protected static string $resource = GovernorateResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            DeleteAction::make(),
-        ];
-    }
 }

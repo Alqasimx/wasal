@@ -37,22 +37,27 @@ class BankResource extends Resource
 
     protected static ?string $pluralModelLabel = 'الحسابات البنكية';
 
-    protected static string|UnitEnum|null $navigationGroup = 'المالية';
+    protected static string|UnitEnum|null $navigationGroup =
+        'المالية';
+
 
     public static function form(Schema $schema): Schema
     {
         return BankForm::configure($schema);
     }
 
+
     public static function table(Table $table): Table
     {
         return BanksTable::configure($table);
     }
 
+
     public static function getRelations(): array
     {
         return [];
     }
+
 
     public static function getPages(): array
     {

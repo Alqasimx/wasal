@@ -2,18 +2,18 @@
 
 namespace App\Filament\Resources\Settings\Pages;
 
+use App\Filament\Pages\AuditedEditRecord;
 use App\Filament\Resources\Settings\SettingResource;
-use Filament\Actions\DeleteAction;
-use Filament\Resources\Pages\EditRecord;
 
-class EditSetting extends EditRecord
+class EditSetting extends AuditedEditRecord
 {
     protected static string $resource = SettingResource::class;
 
-    protected function getHeaderActions(): array
+    protected function mutateFormDataBeforeSave(array $data): array
     {
-        return [
-            DeleteAction::make(),
-        ];
+        $data['updated_by_user_id'] = auth()->id();
+        $data['updated_at'] = now();
+
+        return $data;
     }
 }

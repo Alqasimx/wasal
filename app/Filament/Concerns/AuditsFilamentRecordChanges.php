@@ -17,31 +17,44 @@ trait AuditsFilamentRecordChanges
     protected function auditExcludedFields(): array
     {
         return [
+            'id',
             'password',
             'remember_token',
             'code_hash',
             'token_hash',
+            'created_at',
+            'updated_at',
+            'deleted_at',
         ];
     }
 
     protected function auditValues(Model $record): array
     {
-        return collect($record->getAttributes())
-            ->except($this->auditExcludedFields())
+        return collect(
+            $record->getAttributes()
+        )
+            ->except(
+                $this->auditExcludedFields()
+            )
             ->all();
     }
 
     protected function captureAuditOldValues(): void
     {
-        $this->auditOldValues = $this->auditValues($this->record);
+        $this->auditOldValues =
+            $this->auditValues($this->record);
     }
 
     protected function writeCreatedAuditLog(): void
     {
         app(AuditService::class)->forModel(
-            action: strtolower($this->auditActionPrefix()) . '.created',
+            action: strtolower(
+                $this->auditActionPrefix()
+            ) . '.created',
             model: $this->record,
-            newValues: $this->auditValues($this->record),
+            newValues: $this->auditValues(
+                $this->record
+            ),
             actor: auth()->user(),
             request: request()
         );
@@ -51,13 +64,15 @@ trait AuditsFilamentRecordChanges
     {
         $this->record->refresh();
 
-        $newValues = $this->auditValues($this->record);
+        $newValues =
+            $this->auditValues($this->record);
 
         $changedOld = [];
         $changedNew = [];
 
         foreach ($newValues as $key => $value) {
-            $oldValue = $this->auditOldValues[$key] ?? null;
+            $oldValue =
+                $this->auditOldValues[$key] ?? null;
 
             if ($oldValue !== $value) {
                 $changedOld[$key] = $oldValue;
@@ -70,7 +85,9 @@ trait AuditsFilamentRecordChanges
         }
 
         app(AuditService::class)->forModel(
-            action: strtolower($this->auditActionPrefix()) . '.updated',
+            action: strtolower(
+                $this->auditActionPrefix()
+            ) . '.updated',
             model: $this->record,
             oldValues: $changedOld,
             newValues: $changedNew,

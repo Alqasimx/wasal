@@ -51,7 +51,9 @@ class UsersTable
                     ->label('تاريخ التسجيل')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(
+                        isToggledHiddenByDefault: true
+                    ),
             ])
             ->recordActions([
                 EditAction::make(),

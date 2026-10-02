@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Countries\Tables;
 
 use Filament\Actions\EditAction;
+
+use App\Filament\Resources\Countries\CountryResource;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -29,8 +31,10 @@ class CountriesTable
                     ->label('نشطة')
                     ->boolean(),
             ])
+
             ->recordActions([
                 EditAction::make(),
             ]);
     }
 }
+

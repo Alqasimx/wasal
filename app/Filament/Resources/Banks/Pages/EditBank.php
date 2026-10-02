@@ -2,18 +2,10 @@
 
 namespace App\Filament\Resources\Banks\Pages;
 
+use App\Filament\Pages\AuditedEditRecord;
 use App\Filament\Resources\Banks\BankResource;
-use Filament\Actions\DeleteAction;
-use Filament\Resources\Pages\EditRecord;
 
-class EditBank extends EditRecord
+class EditBank extends AuditedEditRecord
 {
     protected static string $resource = BankResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            DeleteAction::make(),
-        ];
-    }
 }

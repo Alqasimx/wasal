@@ -1,16 +1,13 @@
 <?php
 
-namespace App\Filament\Resources\Users\Pages;
+namespace App\Filament\Pages;
 
 use App\Filament\Concerns\AuditsFilamentRecordChanges;
-use App\Filament\Resources\Users\UserResource;
 use Filament\Resources\Pages\EditRecord;
 
-class EditUser extends EditRecord
+abstract class AuditedEditRecord extends EditRecord
 {
     use AuditsFilamentRecordChanges;
-
-    protected static string $resource = UserResource::class;
 
     protected function beforeSave(): void
     {

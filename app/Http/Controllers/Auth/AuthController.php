@@ -7,6 +7,7 @@ use App\Services\AuditService;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
 {
@@ -35,12 +36,40 @@ class AuthController extends Controller
             ], 422);
         }
 
+        $rateLimitKey = implode(':', [
+            'otp',
+            $data['purpose'],
+            $data['channel'],
+            $data['phone'],
+        ]);
+
+        if (
+            RateLimiter::tooManyAttempts(
+                $rateLimitKey,
+                3
+            )
+        ) {
+            $seconds = RateLimiter::availableIn(
+                $rateLimitKey
+            );
+
+            return response()->json([
+                'message' => 'تم تجاوز عدد محاولات طلب رمز التحقق. حاول مرة أخرى لاحقًا.',
+                'retry_after_seconds' => $seconds,
+            ], 429);
+        }
+
         $this->authService->requestOtp(
             phone: $data['phone'],
             channel: $data['channel'],
             email: $data['email'] ?? null,
             purpose: $data['purpose'],
             whatsappPhone: $data['whatsapp_phone'] ?? null
+        );
+
+        RateLimiter::hit(
+            $rateLimitKey,
+            300
         );
 
         return response()->json([
@@ -238,7 +267,10 @@ class AuthController extends Controller
             $authorization &&
             str_starts_with($authorization, 'Bearer ')
         ) {
-            $plainTextToken = substr($authorization, 7);
+            $plainTextToken = substr(
+                $authorization,
+                7
+            );
         }
 
         $this->authService->revokeCurrentApiSession(

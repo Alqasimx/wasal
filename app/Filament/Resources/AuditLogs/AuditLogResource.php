@@ -7,11 +7,14 @@ use App\Filament\Resources\AuditLogs\Pages\ViewAuditLog;
 use App\Filament\Resources\AuditLogs\Schemas\AuditLogInfolist;
 use App\Filament\Resources\AuditLogs\Tables\AuditLogsTable;
 use App\Models\AuditLog;
+use App\Models\Bank;
+use App\Models\Currency;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
@@ -30,16 +33,102 @@ class AuditLogResource extends Resource
 
     protected static ?string $pluralModelLabel = 'سجل التدقيق';
 
-    protected static string|UnitEnum|null $navigationGroup = 'إدارة النظام';
+    protected static string|UnitEnum|null $navigationGroup =
+        'إدارة النظام';
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->can('audit_logs.view') ?? false;
+        $user = auth()->user();
+
+        if (! $user) {
+            return false;
+        }
+
+        return $user->can('audit_logs.view')
+            || $user->can('audit_logs.financial_view');
     }
 
     public static function canView(Model $record): bool
     {
-        return auth()->user()?->can('audit_logs.view') ?? false;
+        $user = auth()->user();
+
+        if (! $user) {
+            return false;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Full Audit Permission
+        |--------------------------------------------------------------------------
+        */
+
+        if ($user->can('audit_logs.view')) {
+            return true;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Financial Audit Permission
+        |--------------------------------------------------------------------------
+        */
+
+        if (! $user->can('audit_logs.financial_view')) {
+            return false;
+        }
+
+        return in_array(
+            $record->entity_type,
+            [
+                Bank::class,
+                Currency::class,
+            ],
+            true
+        );
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        $user = auth()->user();
+
+        if (! $user) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | System administrators / full audit viewers
+        |--------------------------------------------------------------------------
+        */
+
+        if ($user->can('audit_logs.view')) {
+            return $query;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Financial audit viewers
+        |--------------------------------------------------------------------------
+        */
+
+        if ($user->can('audit_logs.financial_view')) {
+            return $query->whereIn(
+                'entity_type',
+                [
+                    Bank::class,
+                    Currency::class,
+                ]
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | No Audit Permission
+        |--------------------------------------------------------------------------
+        */
+
+        return $query->whereRaw('1 = 0');
     }
 
     public static function canCreate(): bool

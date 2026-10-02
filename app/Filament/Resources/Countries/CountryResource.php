@@ -37,22 +37,27 @@ class CountryResource extends Resource
 
     protected static ?string $pluralModelLabel = 'الدول';
 
-    protected static string|UnitEnum|null $navigationGroup = 'المواقع';
+    protected static string|UnitEnum|null $navigationGroup =
+        'المواقع';
+
 
     public static function form(Schema $schema): Schema
     {
         return CountryForm::configure($schema);
     }
 
+
     public static function table(Table $table): Table
     {
         return CountriesTable::configure($table);
     }
 
+
     public static function getRelations(): array
     {
         return [];
     }
+
 
     public static function getPages(): array
     {

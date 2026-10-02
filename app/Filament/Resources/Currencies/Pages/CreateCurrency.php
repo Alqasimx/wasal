@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\Currencies\Pages;
 
+use App\Filament\Pages\AuditedCreateRecord;
 use App\Filament\Resources\Currencies\CurrencyResource;
-use Filament\Resources\Pages\CreateRecord;
 
-class CreateCurrency extends CreateRecord
+class CreateCurrency extends AuditedCreateRecord
 {
     protected static string $resource = CurrencyResource::class;
 }

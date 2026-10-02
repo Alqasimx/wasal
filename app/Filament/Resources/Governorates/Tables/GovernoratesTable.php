@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Governorates\Tables;
 
 use Filament\Actions\EditAction;
+
+use App\Filament\Resources\Governorates\GovernorateResource;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -30,8 +32,10 @@ class GovernoratesTable
                     ->label('نشطة')
                     ->boolean(),
             ])
+
             ->recordActions([
                 EditAction::make(),
             ]);
     }
 }
+

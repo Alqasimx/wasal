@@ -1,11 +1,13 @@
 <?php
 
+// app/Filament/Resources/Governorates/Pages/CreateGovernorate.php
+
 namespace App\Filament\Resources\Governorates\Pages;
 
+use App\Filament\Pages\AuditedCreateRecord;
 use App\Filament\Resources\Governorates\GovernorateResource;
-use Filament\Resources\Pages\CreateRecord;
 
-class CreateGovernorate extends CreateRecord
+class CreateGovernorate extends AuditedCreateRecord
 {
     protected static string $resource = GovernorateResource::class;
 }

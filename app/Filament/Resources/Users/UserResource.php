@@ -37,22 +37,27 @@ class UserResource extends Resource
 
     protected static ?string $pluralModelLabel = 'المستخدمون';
 
-    protected static string|UnitEnum|null $navigationGroup = 'إدارة النظام';
+    protected static string|UnitEnum|null $navigationGroup =
+        'إدارة النظام';
+
 
     public static function form(Schema $schema): Schema
     {
         return UserForm::configure($schema);
     }
 
+
     public static function table(Table $table): Table
     {
         return UsersTable::configure($table);
     }
 
+
     public static function getRelations(): array
     {
         return [];
     }
+
 
     public static function getPages(): array
     {
