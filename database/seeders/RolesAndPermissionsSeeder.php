@@ -57,6 +57,15 @@ class RolesAndPermissionsSeeder extends Seeder
             'property_requests.view',
             'property_requests.manage',
 
+            'tenants.view',
+            'tenants.manage',
+
+            'tenancies.view',
+            'tenancies.manage',
+
+            'rent_due_items.view',
+            'rent_due_items.manage',
+
             'tasks.view',
             'tasks.manage',
 
@@ -149,6 +158,12 @@ class RolesAndPermissionsSeeder extends Seeder
                 'property_units.view',
                 'property_owners.view',
                 'property_requests.view',
+                'tenants.view',
+                'tenants.manage',
+                'tenancies.view',
+                'tenancies.manage',
+                'rent_due_items.view',
+                'rent_due_items.manage',
                 'tasks.view',
                 'tasks.manage',
             ]);
@@ -158,6 +173,10 @@ class RolesAndPermissionsSeeder extends Seeder
                 'banks.view',
                 'banks.manage',
                 'currencies.view',
+                'tenants.view',
+                'tenancies.view',
+                'rent_due_items.view',
+                'rent_due_items.manage',
                 'audit_logs.financial_view',
             ]);
 
@@ -168,6 +187,9 @@ class RolesAndPermissionsSeeder extends Seeder
                 'currencies.view',
                 'currencies.manage',
                 'settings.view',
+                'tenants.view',
+                'tenancies.view',
+                'rent_due_items.view',
                 'audit_logs.financial_view',
             ]);
 
