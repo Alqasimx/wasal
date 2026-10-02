@@ -296,8 +296,8 @@
     }
 
     .fi-ta-table tbody td {
-        padding-top: .72rem !important;
-        padding-bottom: .72rem !important;
+        padding-top: .82rem !important;
+        padding-bottom: .82rem !important;
         padding-inline: .8rem !important;
         vertical-align: middle;
         border-bottom: 1px solid #eee6d4 !important;
@@ -343,10 +343,10 @@
 
     /* Smaller, consistent thumbnails across all tables */
     .fi-ta-image {
-        width: 96px !important;
-        height: 68px !important;
-        max-width: 96px !important;
-        max-height: 68px !important;
+        width: 136px !important;
+        height: 96px !important;
+        max-width: 136px !important;
+        max-height: 96px !important;
         object-fit: cover;
         border: 1px solid #eadfc8;
         border-radius: 11px !important;
@@ -425,8 +425,8 @@
         }
 
         .fi-ta-image {
-            width: 82px !important;
-            height: 60px !important;
+            width: 116px !important;
+            height: 82px !important;
         }
 
         .fi-sidebar-item-button:hover {
