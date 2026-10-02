@@ -8,6 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Some local installations created this table before the migration was committed.
+        // Preserve that data and let Laravel record this migration as completed.
+        if (Schema::hasTable('property_attribute_values')) {
+            return;
+        }
+
         Schema::create('property_attribute_values', function (Blueprint $table) {
             $table->id();
             $table->string('attributable_type');
