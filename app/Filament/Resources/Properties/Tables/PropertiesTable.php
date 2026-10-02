@@ -19,8 +19,8 @@ class PropertiesTable
                     ->label('الصورة')
                     ->state(fn (Property $record): ?string => $record->gallery[0] ?? null)
                     ->disk('public')
-                    ->height(68)
-                    ->width(96),
+                    ->height(96)
+                    ->width(136),
 
                 TextColumn::make('internal_code')
                     ->label('الرمز')
