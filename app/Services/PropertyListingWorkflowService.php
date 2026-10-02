@@ -41,7 +41,7 @@ class PropertyListingWorkflowService
         User $actor,
         ?Request $request = null,
     ): PropertyListingVersion {
-        if (! $listing->isPublished()) {
+        if ($listing->status !== PropertyListing::STATUS_PUBLISHED) {
             throw new DomainException('Only published listings use revision drafts.');
         }
 
@@ -111,7 +111,7 @@ class PropertyListingWorkflowService
                 throw new DomainException('This listing already has a version pending review.');
             }
 
-            $wasPublished = $lockedListing->isPublished();
+            $wasPublished = $lockedListing->status === PropertyListing::STATUS_PUBLISHED;
 
             if ($wasPublished) {
                 $version = $lockedListing->versions()
@@ -266,7 +266,7 @@ class PropertyListingWorkflowService
                 'reviewed_at' => now(),
             ]);
 
-            if (! $lockedListing->isPublished()) {
+            if ($lockedListing->status !== PropertyListing::STATUS_PUBLISHED) {
                 $lockedListing->update([
                     'status' => PropertyListing::STATUS_CHANGES_REQUESTED,
                     'reviewed_by_user_id' => $actor->id,
@@ -318,7 +318,7 @@ class PropertyListingWorkflowService
                 'reviewed_at' => now(),
             ]);
 
-            if (! $lockedListing->isPublished()) {
+            if ($lockedListing->status !== PropertyListing::STATUS_PUBLISHED) {
                 $lockedListing->update([
                     'status' => PropertyListing::STATUS_REJECTED,
                     'reviewed_by_user_id' => $actor->id,
