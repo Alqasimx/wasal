@@ -8,6 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // MySQL limits identifier names; this table may also exist after a partial migration.
+        if (Schema::hasTable('property_request_status_history')) {
+            return;
+        }
+
         Schema::create('property_request_status_history', function (Blueprint $table) {
             $table->id();
             $table->foreignId('property_request_id')->constrained()->cascadeOnDelete();
@@ -17,7 +22,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamp('created_at')->useCurrent();
 
-            $table->index(['property_request_id', 'created_at']);
+            $table->index(['property_request_id', 'created_at'], 'prsh_request_created_idx');
         });
     }
 
