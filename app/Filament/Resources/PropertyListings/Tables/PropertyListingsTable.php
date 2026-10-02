@@ -7,6 +7,7 @@ use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -18,10 +19,21 @@ class PropertyListingsTable
     {
         return $table->defaultSort('created_at', 'desc')
             ->columns([
+                ImageColumn::make('property_image')
+                    ->label('الصورة')
+                    ->state(fn (PropertyListing $record): ?string => $record->property?->gallery[0] ?? null)
+                    ->disk('public')
+                    ->height(56)
+                    ->width(72)
+                    ->square(),
                 TextColumn::make('listing_number')->label('رقم الإعلان')->searchable()->sortable(),
                 TextColumn::make('public_title')->label('العنوان')->searchable(),
                 TextColumn::make('property.internal_code')->label('العقار'),
+                TextColumn::make('property.city.name_ar')->label('المدينة'),
+                TextColumn::make('property.district.name_ar')->label('المديرية'),
                 TextColumn::make('purpose')->label('الغرض')->formatStateUsing(fn (string $state): string => $state === 'rent' ? 'إيجار' : 'بيع')->badge(),
+                TextColumn::make('price')->label('السعر')->numeric()->sortable(),
+                TextColumn::make('price_period')->label('الفترة')->toggleable(),
                 TextColumn::make('status')->label('الحالة')->badge(),
                 TextColumn::make('reviewer.name')->label('المراجع'),
                 IconColumn::make('share_enabled')->label('مشاركة')->boolean(),

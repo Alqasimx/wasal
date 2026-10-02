@@ -73,6 +73,7 @@ class PropertyForm
                 ->disk('public')
                 ->directory('properties')
                 ->image()
+                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                 ->multiple()
                 ->reorderable()
                 ->appendFiles()
