@@ -20,6 +20,11 @@ class PropertyTypeResource extends Resource
 {
     use HasResourcePermissions;
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     protected static ?string $model = PropertyType::class;
 
     protected static string $viewPermission = 'property_types.view';

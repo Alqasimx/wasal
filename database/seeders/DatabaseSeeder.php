@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             SettingsSeeder::class,
             GeographySeeder::class,
             CurrencySeeder::class,
+            PropertyMetadataSeeder::class,
         ]);
     }
 }

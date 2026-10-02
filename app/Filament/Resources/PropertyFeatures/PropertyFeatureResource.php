@@ -20,6 +20,11 @@ class PropertyFeatureResource extends Resource
 {
     use HasResourcePermissions;
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     protected static ?string $model = PropertyFeature::class;
 
     protected static string $viewPermission = 'property_features.view';
