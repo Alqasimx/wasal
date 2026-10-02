@@ -17,25 +17,21 @@ class TasksTable
                 TextColumn::make('title')
                     ->label('المهمة')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->limit(32)
+                    ->wrap(),
 
                 TextColumn::make('assignee.name')
                     ->label('المسؤول')
-                    ->searchable(),
+                    ->searchable()
+                    ->placeholder('غير معين')
+                    ->limit(22),
 
                 TextColumn::make('due_at')
                     ->label('الاستحقاق')
                     ->dateTime('Y-m-d H:i')
-                    ->sortable(),
-
-                TextColumn::make('recurrence')
-                    ->label('التكرار')
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        Task::RECURRENCE_DAILY => 'يومي',
-                        Task::RECURRENCE_WEEKLY => 'أسبوعي',
-                        default => 'مرة واحدة',
-                    })
-                    ->badge(),
+                    ->sortable()
+                    ->placeholder('—'),
 
                 TextColumn::make('status')
                     ->label('الحالة')
@@ -45,10 +41,24 @@ class TasksTable
                         Task::STATUS_CANCELLED => 'ملغاة',
                         default => 'جديدة',
                     })
-                    ->badge(),
+                    ->badge()
+                    ->sortable(),
+
+                TextColumn::make('recurrence')
+                    ->label('التكرار')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        Task::RECURRENCE_DAILY => 'يومي',
+                        Task::RECURRENCE_WEEKLY => 'أسبوعي',
+                        default => 'مرة واحدة',
+                    })
+                    ->badge()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->striped()
+            ->defaultPaginationPageOption(10)
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->label('تعديل'),
             ]);
     }
 }
