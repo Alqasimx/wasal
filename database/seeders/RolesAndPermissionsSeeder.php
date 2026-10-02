@@ -47,6 +47,8 @@ class RolesAndPermissionsSeeder extends Seeder
 
             'property_listings.view',
             'property_listings.manage',
+            'property_listings.review',
+            'property_listings.publish',
 
             'property_units.view',
             'property_units.manage',
@@ -127,6 +129,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'properties.manage',
                 'property_listings.view',
                 'property_listings.manage',
+                'property_listings.review',
+                'property_listings.publish',
                 'property_units.view',
                 'property_units.manage',
                 'property_owners.view',
