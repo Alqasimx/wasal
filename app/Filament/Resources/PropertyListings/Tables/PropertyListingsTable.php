@@ -19,6 +19,13 @@ class PropertyListingsTable
             TextColumn::make('status')->label('الحالة')->badge(),
             IconColumn::make('share_enabled')->label('مشاركة')->boolean(),
             TextColumn::make('share_count')->label('المشاركات')->sortable(),
+            TextColumn::make('share_url')
+                ->label('رابط المشاركة')
+                ->state(fn ($record): ?string => $record->share_enabled && $record->share_token
+                    ? url('/api/v1/shared-offers/'.$record->share_token)
+                    : null)
+                ->copyable()
+                ->limit(35),
         ])->recordActions([EditAction::make()]);
     }
 }
