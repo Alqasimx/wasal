@@ -23,9 +23,8 @@ class PropertyListingsTable
                     ->label('الصورة')
                     ->state(fn (PropertyListing $record): ?string => $record->property?->gallery[0] ?? null)
                     ->disk('public')
-                    ->height(56)
-                    ->width(72)
-                    ->square(),
+                    ->height(104)
+                    ->width(148),
                 TextColumn::make('listing_number')->label('رقم الإعلان')->searchable()->sortable(),
                 TextColumn::make('public_title')->label('العنوان')->searchable(),
                 TextColumn::make('property.internal_code')->label('العقار'),
@@ -45,7 +44,7 @@ class PropertyListingsTable
                         : null)
                     ->copyable()
                     ->limit(35),
-            ])
+            ])->striped()->defaultPaginationPageOption(10)
             ->filters([
                 SelectFilter::make('status')->label('الحالة')->options([
                     PropertyListing::STATUS_DRAFT => 'مسودة',

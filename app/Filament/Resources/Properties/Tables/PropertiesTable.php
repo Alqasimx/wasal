@@ -17,9 +17,8 @@ class PropertiesTable
                 ->label('الصورة')
                 ->state(fn (Property $record): ?string => $record->gallery[0] ?? null)
                 ->disk('public')
-                ->height(56)
-                ->width(72)
-                ->square(),
+                ->height(104)
+                ->width(148),
             TextColumn::make('internal_code')->label('الرمز')->searchable()->sortable(),
             TextColumn::make('title_ar')->label('العقار')->searchable()->sortable(),
             TextColumn::make('propertyType.name_ar')->label('النوع'),
@@ -30,6 +29,6 @@ class PropertiesTable
             TextColumn::make('area')->label('المساحة')->suffix(' م²')->sortable()->toggleable(),
             TextColumn::make('units_count')->label('الوحدات')->sortable()->toggleable(),
             TextColumn::make('status')->label('الحالة')->badge(),
-        ])->recordActions([EditAction::make()]);
+        ])->striped()->defaultPaginationPageOption(10)->recordActions([EditAction::make()]);
     }
 }
