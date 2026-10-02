@@ -57,6 +57,9 @@ class AdminPanelProvider extends PanelProvider
                     ->label('البيانات المرجعية'),
 
                 NavigationGroup::make()
+                    ->label('العقارات'),
+
+                NavigationGroup::make()
                     ->label('المواقع'),
 
                 NavigationGroup::make()

@@ -36,6 +36,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'currencies.view',
             'currencies.manage',
 
+            'property_types.view',
+            'property_types.manage',
+
+            'property_features.view',
+            'property_features.manage',
+
             'banks.view',
             'banks.manage',
 
@@ -111,6 +117,10 @@ class RolesAndPermissionsSeeder extends Seeder
             ->syncPermissions([
                 'geography.view',
                 'currencies.view',
+                'property_types.view',
+                'property_types.manage',
+                'property_features.view',
+                'property_features.manage',
             ]);
 
         /*
@@ -124,6 +134,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'users.view',
                 'geography.view',
                 'currencies.view',
+                'property_types.view',
+                'property_features.view',
             ]);
 
         /*

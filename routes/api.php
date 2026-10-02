@@ -1,10 +1,15 @@
 <?php
 
+use App\Http\Controllers\Api\V1\PropertyFeatureController;
+use App\Http\Controllers\Api\V1\PropertyTypeController;
 use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
+    Route::get('/property-types', [PropertyTypeController::class, 'index']);
+    Route::get('/property-features', [PropertyFeatureController::class, 'index']);
+
     Route::prefix('auth')->group(function () {
         Route::post('/otp/request', [AuthController::class, 'requestOtp']);
 
