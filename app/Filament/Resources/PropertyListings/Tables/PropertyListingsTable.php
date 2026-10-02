@@ -24,8 +24,8 @@ class PropertyListingsTable
                     ->label('الصورة')
                     ->state(fn (PropertyListing $record): ?string => $record->property?->gallery[0] ?? null)
                     ->disk('public')
-                    ->height(68)
-                    ->width(96),
+                    ->height(96)
+                    ->width(136),
 
                 TextColumn::make('listing_number')
                     ->label('رقم الإعلان')
