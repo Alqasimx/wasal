@@ -7,6 +7,8 @@ use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Governorate;
 use App\Models\Property;
+use App\Models\PropertyAttributeValue;
+use App\Models\PropertyFeature;
 use App\Models\PropertyListing;
 use App\Models\PropertyType;
 use App\Models\User;
@@ -48,6 +50,32 @@ class PropertyListingSharingTest extends TestCase
 
         $this->getJson('/api/v1/property-listings/'.$listing->id)->assertNotFound();
         $this->getJson('/api/v1/shared-offers/'.$listing->share_token)->assertNotFound();
+    }
+
+    public function test_public_listings_can_be_filtered_by_dynamic_attribute(): void
+    {
+        $listing = $this->publishedListing();
+        $feature = PropertyFeature::create([
+            'name_ar' => 'غرف النوم',
+            'name_en' => 'Bedrooms',
+            'slug' => 'bedrooms',
+            'key' => 'bedrooms',
+            'data_type' => 'integer',
+            'is_filterable' => true,
+            'is_active' => true,
+        ]);
+
+        PropertyAttributeValue::create([
+            'attributable_type' => Property::class,
+            'attributable_id' => $listing->property_id,
+            'property_feature_id' => $feature->id,
+            'value_number' => 3,
+        ]);
+
+        $this->getJson('/api/v1/property-listings?attribute[bedrooms]=3')
+            ->assertOk()
+            ->assertJsonPath('data.0.listing_number', $listing->listing_number)
+            ->assertJsonPath('data.0.property.attributes.0.key', 'bedrooms');
     }
 
     private function publishedListing(): PropertyListing

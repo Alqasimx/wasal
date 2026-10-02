@@ -31,6 +31,12 @@ class PropertyFeatureForm
                     ->alphaDash()
                     ->maxLength(255),
 
+                TextInput::make('key')
+                    ->label('مفتاح الفلتر')
+                    ->required()
+                    ->unique(ignoreRecord: true)
+                    ->alphaDash(),
+
                 Select::make('data_type')
                     ->label('نوع القيمة')
                     ->options([
@@ -39,6 +45,7 @@ class PropertyFeatureForm
                         'decimal' => 'رقم عشري',
                         'text' => 'نص',
                         'select' => 'اختيار واحد',
+                        'multi_select' => 'اختيارات متعددة',
                         'multiselect' => 'اختيارات متعددة',
                     ])
                     ->required()
@@ -57,6 +64,10 @@ class PropertyFeatureForm
 
                 Toggle::make('is_filterable')
                     ->label('تظهر كفلتر بحث')
+                    ->default(false),
+
+                Toggle::make('is_searchable')
+                    ->label('تستخدم في البحث النصي')
                     ->default(false),
 
                 Toggle::make('is_active')

@@ -80,4 +80,19 @@ class Property extends Model
     {
         return $this->hasMany(PropertyListing::class);
     }
+
+    public function owners(): HasMany
+    {
+        return $this->hasMany(PropertyOwner::class);
+    }
+
+    public function units(): HasMany
+    {
+        return $this->hasMany(PropertyUnit::class);
+    }
+
+    public function attributeValues(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(PropertyAttributeValue::class, 'attributable');
+    }
 }

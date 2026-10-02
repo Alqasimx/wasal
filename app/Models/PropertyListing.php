@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -27,14 +28,14 @@ class PropertyListing extends Model
         'property_id', 'listing_number', 'purpose', 'price', 'currency_id',
         'price_period', 'public_title', 'public_description', 'status',
         'published_at', 'expires_at', 'created_by_user_id', 'reviewed_by_user_id',
-        'reviewed_at', 'share_token', 'share_enabled', 'share_count',
+        'featured_until', 'reviewed_at', 'share_token', 'share_enabled', 'share_count',
     ];
 
     protected function casts(): array
     {
         return [
             'price' => 'decimal:2', 'published_at' => 'datetime', 'expires_at' => 'datetime',
-            'reviewed_at' => 'datetime', 'share_enabled' => 'boolean', 'share_count' => 'integer',
+            'featured_until' => 'datetime', 'reviewed_at' => 'datetime', 'share_enabled' => 'boolean', 'share_count' => 'integer',
         ];
     }
 
@@ -59,4 +60,9 @@ class PropertyListing extends Model
     public function currency(): BelongsTo { return $this->belongsTo(Currency::class); }
     public function creator(): BelongsTo { return $this->belongsTo(User::class, 'created_by_user_id'); }
     public function reviewer(): BelongsTo { return $this->belongsTo(User::class, 'reviewed_by_user_id'); }
+
+    public function versions(): HasMany
+    {
+        return $this->hasMany(PropertyListingVersion::class);
+    }
 }

@@ -30,6 +30,9 @@ class PropertyListingResource extends JsonResource
                 'public_location_text' => $this->property?->public_location_text,
                 'public_latitude' => $this->property?->public_latitude,
                 'public_longitude' => $this->property?->public_longitude,
+                'attributes' => $this->property?->relationLoaded('attributeValues')
+                    ? PropertyAttributeValueResource::collection($this->property->attributeValues)
+                    : [],
             ],
         ];
     }
