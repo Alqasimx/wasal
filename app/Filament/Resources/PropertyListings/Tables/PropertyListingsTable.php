@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\PropertyListings\Tables;
 
 use App\Models\PropertyListing;
+use App\Services\PropertyListingWorkflowService;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Textarea;
@@ -54,6 +55,18 @@ class PropertyListingsTable
 
                 TextColumn::make('status')
                     ->label('الحالة')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        PropertyListing::STATUS_DRAFT => 'مسودة',
+                        PropertyListing::STATUS_PENDING_REVIEW => 'قيد المراجعة',
+                        PropertyListing::STATUS_CHANGES_REQUESTED => 'مطلوب تعديل',
+                        PropertyListing::STATUS_PUBLISHED => 'منشور',
+                        PropertyListing::STATUS_PAUSED => 'موقوف',
+                        PropertyListing::STATUS_REJECTED => 'مرفوض',
+                        PropertyListing::STATUS_EXPIRED => 'منتهي',
+                        PropertyListing::STATUS_SOLD => 'تم البيع',
+                        PropertyListing::STATUS_RENTED => 'تم التأجير',
+                        default => $state,
+                    })
                     ->badge()
                     ->sortable(),
 
@@ -120,7 +133,9 @@ class PropertyListingsTable
             ->defaultPaginationPageOption(10)
             ->recordActions([
                 EditAction::make()
-                    ->label('تعديل'),
+                    ->label('تعديل')
+                    ->visible(fn (PropertyListing $record): bool => self::canEdit($record)),
+
                 self::submitForReviewAction(),
                 self::approveAction(),
                 self::requestChangesAction(),
@@ -128,9 +143,39 @@ class PropertyListingsTable
             ]);
     }
 
-    private static function canReview(): bool
+    private static function canManage(): bool
     {
         return (bool) auth()->user()?->can('property_listings.manage');
+    }
+
+    private static function canReview(): bool
+    {
+        return (bool) auth()->user()?->can('property_listings.review');
+    }
+
+    private static function canPublish(): bool
+    {
+        return (bool) auth()->user()?->can('property_listings.publish');
+    }
+
+    private static function canEdit(PropertyListing $record): bool
+    {
+        if (! self::canManage()) {
+            return false;
+        }
+
+        if ($record->status === PropertyListing::STATUS_PENDING_REVIEW) {
+            return false;
+        }
+
+        if (
+            $record->status === PropertyListing::STATUS_PUBLISHED
+            && app(PropertyListingWorkflowService::class)->hasPendingVersion($record)
+        ) {
+            return false;
+        }
+
+        return true;
     }
 
     private static function submitForReviewAction(): Action
@@ -138,17 +183,30 @@ class PropertyListingsTable
         return Action::make('submitForReview')
             ->label('إرسال للمراجعة')
             ->color('warning')
-            ->visible(fn (PropertyListing $record): bool => self::canReview()
-                && in_array($record->status, [PropertyListing::STATUS_DRAFT, PropertyListing::STATUS_CHANGES_REQUESTED], true))
-            ->action(function (PropertyListing $record): void {
-                $record->update(['status' => PropertyListing::STATUS_PENDING_REVIEW]);
+            ->visible(function (PropertyListing $record): bool {
+                if (! self::canManage()) {
+                    return false;
+                }
 
-                $record->versions()->create([
-                    'version_number' => ((int) $record->versions()->max('version_number')) + 1,
-                    'payload' => $record->fresh()->toArray(),
-                    'status' => 'pending',
-                    'submitted_by_user_id' => auth()->id(),
-                ]);
+                $workflow = app(PropertyListingWorkflowService::class);
+
+                if ($record->status === PropertyListing::STATUS_PUBLISHED) {
+                    return ! $workflow->hasPendingVersion($record)
+                        && $workflow->hasEditableRevision($record);
+                }
+
+                return in_array($record->status, [
+                    PropertyListing::STATUS_DRAFT,
+                    PropertyListing::STATUS_CHANGES_REQUESTED,
+                ], true);
+            })
+            ->requiresConfirmation()
+            ->action(function (PropertyListing $record): void {
+                app(PropertyListingWorkflowService::class)->submitForReview(
+                    listing: $record,
+                    actor: auth()->user(),
+                    request: request(),
+                );
 
                 Notification::make()
                     ->success()
@@ -167,30 +225,19 @@ class PropertyListingsTable
                     ->label('ملاحظات الاعتماد')
                     ->rows(3),
             ])
-            ->visible(fn (PropertyListing $record): bool => self::canReview()
-                && $record->status === PropertyListing::STATUS_PENDING_REVIEW)
+            ->visible(fn (PropertyListing $record): bool => self::canPublish()
+                && app(PropertyListingWorkflowService::class)->hasPendingVersion($record))
             ->action(function (PropertyListing $record, array $data): void {
-                $record->update([
-                    'status' => PropertyListing::STATUS_PUBLISHED,
-                    'published_at' => $record->published_at ?? now(),
-                    'reviewed_by_user_id' => auth()->id(),
-                    'reviewed_at' => now(),
-                ]);
-
-                $record->versions()
-                    ->where('status', 'pending')
-                    ->latest('version_number')
-                    ->first()
-                    ?->update([
-                        'status' => 'approved',
-                        'reviewed_by_user_id' => auth()->id(),
-                        'review_notes' => $data['review_notes'] ?? null,
-                        'reviewed_at' => now(),
-                    ]);
+                app(PropertyListingWorkflowService::class)->approveAndPublish(
+                    listing: $record,
+                    actor: auth()->user(),
+                    reviewNotes: $data['review_notes'] ?? null,
+                    request: request(),
+                );
 
                 Notification::make()
                     ->success()
-                    ->title('تم اعتماد الإعلان ونشره')
+                    ->title('تم اعتماد الإعلان ونشر النسخة المعتمدة')
                     ->send();
             });
     }
@@ -207,24 +254,14 @@ class PropertyListingsTable
                     ->rows(4),
             ])
             ->visible(fn (PropertyListing $record): bool => self::canReview()
-                && $record->status === PropertyListing::STATUS_PENDING_REVIEW)
+                && app(PropertyListingWorkflowService::class)->hasPendingVersion($record))
             ->action(function (PropertyListing $record, array $data): void {
-                $record->update([
-                    'status' => PropertyListing::STATUS_CHANGES_REQUESTED,
-                    'reviewed_by_user_id' => auth()->id(),
-                    'reviewed_at' => now(),
-                ]);
-
-                $record->versions()
-                    ->where('status', 'pending')
-                    ->latest('version_number')
-                    ->first()
-                    ?->update([
-                        'status' => 'rejected',
-                        'reviewed_by_user_id' => auth()->id(),
-                        'review_notes' => $data['review_notes'],
-                        'reviewed_at' => now(),
-                    ]);
+                app(PropertyListingWorkflowService::class)->requestChanges(
+                    listing: $record,
+                    actor: auth()->user(),
+                    reviewNotes: $data['review_notes'],
+                    request: request(),
+                );
 
                 Notification::make()
                     ->success()
@@ -246,28 +283,18 @@ class PropertyListingsTable
                     ->rows(4),
             ])
             ->visible(fn (PropertyListing $record): bool => self::canReview()
-                && in_array($record->status, [PropertyListing::STATUS_PENDING_REVIEW, PropertyListing::STATUS_CHANGES_REQUESTED], true))
+                && app(PropertyListingWorkflowService::class)->hasPendingVersion($record))
             ->action(function (PropertyListing $record, array $data): void {
-                $record->update([
-                    'status' => PropertyListing::STATUS_REJECTED,
-                    'reviewed_by_user_id' => auth()->id(),
-                    'reviewed_at' => now(),
-                ]);
-
-                $record->versions()
-                    ->where('status', 'pending')
-                    ->latest('version_number')
-                    ->first()
-                    ?->update([
-                        'status' => 'rejected',
-                        'reviewed_by_user_id' => auth()->id(),
-                        'review_notes' => $data['review_notes'],
-                        'reviewed_at' => now(),
-                    ]);
+                app(PropertyListingWorkflowService::class)->reject(
+                    listing: $record,
+                    actor: auth()->user(),
+                    reviewNotes: $data['review_notes'],
+                    request: request(),
+                );
 
                 Notification::make()
                     ->success()
-                    ->title('تم رفض الإعلان')
+                    ->title('تم رفض النسخة المرسلة للمراجعة')
                     ->send();
             });
     }
