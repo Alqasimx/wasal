@@ -12,23 +12,77 @@ class PropertiesTable
 {
     public static function configure(Table $table): Table
     {
-        return $table->columns([
-            ImageColumn::make('gallery_preview')
-                ->label('الصورة')
-                ->state(fn (Property $record): ?string => $record->gallery[0] ?? null)
-                ->disk('public')
-                ->height(104)
-                ->width(148),
-            TextColumn::make('internal_code')->label('الرمز')->searchable()->sortable(),
-            TextColumn::make('title_ar')->label('العقار')->searchable()->sortable(),
-            TextColumn::make('propertyType.name_ar')->label('النوع'),
-            TextColumn::make('city.name_ar')->label('المدينة'),
-            TextColumn::make('district.name_ar')->label('المديرية'),
-            TextColumn::make('neighborhood.name_ar')->label('الحي'),
-            TextColumn::make('street_name')->label('الشارع')->toggleable(),
-            TextColumn::make('area')->label('المساحة')->suffix(' م²')->sortable()->toggleable(),
-            TextColumn::make('units_count')->label('الوحدات')->sortable()->toggleable(),
-            TextColumn::make('status')->label('الحالة')->badge(),
-        ])->striped()->defaultPaginationPageOption(10)->recordActions([EditAction::make()]);
+        return $table
+            ->defaultSort('created_at', 'desc')
+            ->columns([
+                ImageColumn::make('gallery_preview')
+                    ->label('الصورة')
+                    ->state(fn (Property $record): ?string => $record->gallery[0] ?? null)
+                    ->disk('public')
+                    ->height(68)
+                    ->width(96),
+
+                TextColumn::make('internal_code')
+                    ->label('الرمز')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('—'),
+
+                TextColumn::make('title_ar')
+                    ->label('العقار')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(24)
+                    ->wrap(),
+
+                TextColumn::make('propertyType.name_ar')
+                    ->label('النوع')
+                    ->placeholder('—'),
+
+                TextColumn::make('city.name_ar')
+                    ->label('المدينة')
+                    ->sortable()
+                    ->placeholder('—'),
+
+                TextColumn::make('area')
+                    ->label('المساحة')
+                    ->suffix(' م²')
+                    ->sortable()
+                    ->placeholder('—'),
+
+                TextColumn::make('status')
+                    ->label('الحالة')
+                    ->badge()
+                    ->sortable(),
+
+                TextColumn::make('district.name_ar')
+                    ->label('المديرية')
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('neighborhood.name_ar')
+                    ->label('الحي')
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('street_name')
+                    ->label('الشارع')
+                    ->limit(28)
+                    ->wrap()
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('units_count')
+                    ->label('الوحدات')
+                    ->sortable()
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->striped()
+            ->defaultPaginationPageOption(10)
+            ->recordActions([
+                EditAction::make()
+                    ->label('تعديل'),
+            ]);
     }
 }
