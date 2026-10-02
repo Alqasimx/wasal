@@ -42,6 +42,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'property_features.view',
             'property_features.manage',
 
+            'tasks.view',
+            'tasks.manage',
+
             'banks.view',
             'banks.manage',
 
@@ -85,33 +88,17 @@ class RolesAndPermissionsSeeder extends Seeder
             ]);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Normal User
-        |--------------------------------------------------------------------------
-        */
-
         Role::findByName('user', 'web')
             ->syncPermissions([]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Customer Service
-        |--------------------------------------------------------------------------
-        */
 
         Role::findByName('customer_service', 'web')
             ->syncPermissions([
                 'users.view',
                 'geography.view',
                 'currencies.view',
+                'tasks.view',
+                'tasks.manage',
             ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Property Reviewer
-        |--------------------------------------------------------------------------
-        */
 
         Role::findByName('property_reviewer', 'web')
             ->syncPermissions([
@@ -121,13 +108,9 @@ class RolesAndPermissionsSeeder extends Seeder
                 'property_types.manage',
                 'property_features.view',
                 'property_features.manage',
+                'tasks.view',
+                'tasks.manage',
             ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Property Management
-        |--------------------------------------------------------------------------
-        */
 
         Role::findByName('property_management', 'web')
             ->syncPermissions([
@@ -136,17 +119,9 @@ class RolesAndPermissionsSeeder extends Seeder
                 'currencies.view',
                 'property_types.view',
                 'property_features.view',
+                'tasks.view',
+                'tasks.manage',
             ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Accountant
-        |--------------------------------------------------------------------------
-        |
-        | المحاسب يستطيع إدارة الحسابات البنكية ومشاهدة العملات،
-        | لكنه لا يرى سجل النظام الكامل.
-        |
-        */
 
         Role::findByName('accountant', 'web')
             ->syncPermissions([
@@ -155,16 +130,6 @@ class RolesAndPermissionsSeeder extends Seeder
                 'currencies.view',
                 'audit_logs.financial_view',
             ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Financial Approver
-        |--------------------------------------------------------------------------
-        |
-        | المعتمد المالي لديه صلاحيات مالية أوسع،
-        | لكنه كذلك لا يرى سجل النظام الكامل.
-        |
-        */
 
         Role::findByName('financial_approver', 'web')
             ->syncPermissions([
@@ -176,31 +141,13 @@ class RolesAndPermissionsSeeder extends Seeder
                 'audit_logs.financial_view',
             ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | System Administrator
-        |--------------------------------------------------------------------------
-        |
-        | مدير النظام يحصل دائمًا على جميع الصلاحيات الموجودة.
-        |
-        */
-
-        $systemAdmin = Role::findByName(
-            'system_admin',
-            'web'
-        );
+        $systemAdmin = Role::findByName('system_admin', 'web');
 
         $systemAdmin->syncPermissions(
             Permission::query()
                 ->where('guard_name', 'web')
                 ->get()
         );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Clear Permission Cache
-        |--------------------------------------------------------------------------
-        */
 
         app(PermissionRegistrar::class)
             ->forgetCachedPermissions();
