@@ -37,7 +37,6 @@ class WasalStatsOverview extends StatsOverviewWidget
             $stats[] = Stat::make('العقارات', Property::query()->count())
                 ->description('إجمالي العقارات المسجلة')
                 ->icon('heroicon-o-building-office-2')
-                ->color('primary')
                 ->url(PropertyResource::getUrl('index'));
         }
 
@@ -45,7 +44,6 @@ class WasalStatsOverview extends StatsOverviewWidget
             $stats[] = Stat::make('الإعلانات المنشورة', PropertyListing::query()->where('status', PropertyListing::STATUS_PUBLISHED)->count())
                 ->description('عروض ظاهرة للعملاء')
                 ->icon('heroicon-o-megaphone')
-                ->color('success')
                 ->url(PropertyListingResource::getUrl('index'));
         }
 
@@ -53,7 +51,6 @@ class WasalStatsOverview extends StatsOverviewWidget
             $stats[] = Stat::make('طلبات العقار', PropertyRequest::query()->whereNotIn('status', [PropertyRequest::STATUS_COMPLETED, PropertyRequest::STATUS_CANCELLED])->count())
                 ->description('طلبات تحتاج متابعة')
                 ->icon('heroicon-o-clipboard-document-list')
-                ->color('warning')
                 ->url(PropertyRequestResource::getUrl('index'));
         }
 
@@ -61,7 +58,6 @@ class WasalStatsOverview extends StatsOverviewWidget
             $stats[] = Stat::make('المهام المفتوحة', Task::query()->whereNotIn('status', [Task::STATUS_COMPLETED, Task::STATUS_CANCELLED])->count())
                 ->description('مهام يومية وأسبوعية')
                 ->icon('heroicon-o-clipboard-document-check')
-                ->color('info')
                 ->url(TaskResource::getUrl('index'));
         }
 
