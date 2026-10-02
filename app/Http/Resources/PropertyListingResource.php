@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class PropertyListingResource extends JsonResource
 {
@@ -30,6 +31,10 @@ class PropertyListingResource extends JsonResource
                 'public_location_text' => $this->property?->public_location_text,
                 'public_latitude' => $this->property?->public_latitude,
                 'public_longitude' => $this->property?->public_longitude,
+                'gallery' => collect($this->property?->gallery ?? [])
+                    ->map(fn (string $path): string => Storage::disk('public')->url($path))
+                    ->values()
+                    ->all(),
                 'attributes' => $this->property?->relationLoaded('attributeValues')
                     ? PropertyAttributeValueResource::collection($this->property->attributeValues)
                     : [],

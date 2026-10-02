@@ -35,6 +35,7 @@ class Property extends Model
         'floors_count',
         'units_count',
         'year_built',
+        'gallery',
     ];
 
     protected function casts(): array
@@ -48,6 +49,7 @@ class Property extends Model
             'floors_count' => 'integer',
             'units_count' => 'integer',
             'year_built' => 'integer',
+            'gallery' => 'array',
         ];
     }
 
