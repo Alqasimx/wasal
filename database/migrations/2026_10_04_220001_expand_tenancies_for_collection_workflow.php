@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -17,6 +18,22 @@ return new class extends Migration
             $table->string('contract_attachment_path')->nullable()->after('auto_generate_dues');
             $table->text('notes')->nullable()->after('contract_attachment_path');
         });
+
+        DB::table('tenancies')
+            ->whereNull('contract_number')
+            ->orderBy('id')
+            ->eachById(function ($tenancy): void {
+                DB::table('tenancies')
+                    ->where('id', $tenancy->id)
+                    ->update([
+                        'contract_number' => 'TEN-LEGACY-'.str_pad(
+                            (string) $tenancy->id,
+                            6,
+                            '0',
+                            STR_PAD_LEFT,
+                        ),
+                    ]);
+            });
     }
 
     public function down(): void
