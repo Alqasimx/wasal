@@ -2,8 +2,19 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\AuditLogs\AuditLogResource;
+use App\Filament\Resources\Banks\BankResource;
+use App\Filament\Resources\Cities\CityResource;
+use App\Filament\Resources\Countries\CountryResource;
+use App\Filament\Resources\Currencies\CurrencyResource;
+use App\Filament\Resources\Districts\DistrictResource;
+use App\Filament\Resources\Governorates\GovernorateResource;
+use App\Filament\Resources\Neighborhoods\NeighborhoodResource;
+use App\Filament\Resources\Permissions\PermissionResource;
+use App\Filament\Resources\Roles\RoleResource;
+use App\Filament\Resources\Settings\SettingResource;
+use App\Filament\Resources\Users\UserResource;
 use App\Filament\Widgets\RecentAuditLogs;
-use App\Filament\Widgets\WasalStatsOverview;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -31,14 +42,11 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-
-            ->brandName('وصال')
-
+            ->brandName('وصال — إدارة النظام')
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn (): \Illuminate\Contracts\View\View => view('filament.admin.styles'),
             )
-
             ->colors([
                 'primary' => Color::hex('#D4AF37'),
                 'gray' => Color::Zinc,
@@ -47,56 +55,36 @@ class AdminPanelProvider extends PanelProvider
                 'danger' => Color::Red,
                 'info' => Color::Sky,
             ])
-
             ->darkMode(true)
-
             ->sidebarCollapsibleOnDesktop()
-
             ->navigationGroups([
-                NavigationGroup::make()
-                    ->label('إدارة النظام'),
-
-                NavigationGroup::make()
-                    ->label('إعدادات النظام'),
-
-                NavigationGroup::make()
-                    ->label('البيانات المرجعية'),
-
-                NavigationGroup::make()
-                    ->label('العقارات'),
-
-                NavigationGroup::make()
-                    ->label('المواقع'),
-
-                NavigationGroup::make()
-                    ->label('المالية'),
+                NavigationGroup::make()->label('إدارة النظام'),
+                NavigationGroup::make()->label('إعدادات النظام'),
+                NavigationGroup::make()->label('البيانات المرجعية'),
+                NavigationGroup::make()->label('المواقع'),
+                NavigationGroup::make()->label('المالية'),
             ])
-
-            ->discoverResources(
-                in: app_path('Filament/Resources'),
-                for: 'App\\Filament\\Resources'
-            )
-
-            ->discoverPages(
-                in: app_path('Filament/Pages'),
-                for: 'App\\Filament\\Pages'
-            )
-
+            ->resources([
+                UserResource::class,
+                RoleResource::class,
+                PermissionResource::class,
+                SettingResource::class,
+                CountryResource::class,
+                GovernorateResource::class,
+                CityResource::class,
+                DistrictResource::class,
+                NeighborhoodResource::class,
+                CurrencyResource::class,
+                BankResource::class,
+                AuditLogResource::class,
+            ])
             ->pages([
                 Dashboard::class,
             ])
-
-            ->discoverWidgets(
-                in: app_path('Filament/Widgets'),
-                for: 'App\\Filament\\Widgets'
-            )
-
             ->widgets([
                 AccountWidget::class,
-                WasalStatsOverview::class,
                 RecentAuditLogs::class,
             ])
-
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -108,7 +96,6 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-
             ->authMiddleware([
                 Authenticate::class,
             ]);
