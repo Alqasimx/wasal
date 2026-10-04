@@ -26,10 +26,7 @@ class DemoAlertSequenceTest extends TestCase
             ->firstOrFail();
 
         Notification::query()->delete();
-
-        Task::query()->update([
-            'notified_at' => now(),
-        ]);
+        Task::query()->delete();
 
         $this->artisan('wasal:seed-demo-alert-sequence', [
             '--email' => $user->email,
@@ -44,6 +41,9 @@ class DemoAlertSequenceTest extends TestCase
         $this->assertCount(10, $tasks);
         $this->assertSame('2026-10-04 22:10', $tasks->first()->due_at->format('Y-m-d H:i'));
         $this->assertSame('2026-10-04 22:19', $tasks->last()->due_at->format('Y-m-d H:i'));
+        $this->assertTrue($tasks->every(
+            fn (Task $task): bool => $task->notify_before_minutes === 0
+        ));
 
         $service = app(TaskNotificationService::class);
 
