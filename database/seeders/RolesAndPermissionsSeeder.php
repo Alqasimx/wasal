@@ -99,6 +99,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'property_documents.view',
             'property_documents.manage',
 
+            'property_management_reports.view',
+            'property_management_reports.export',
+
             'tasks.view',
             'tasks.manage',
 
@@ -216,6 +219,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'utility_meter_readings.manage',
                 'property_documents.view',
                 'property_documents.manage',
+                'property_management_reports.view',
+                'property_management_reports.export',
                 'tasks.view',
                 'tasks.manage',
             ]);
@@ -237,6 +242,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'property_expenses.manage',
                 'owner_settlements.view',
                 'owner_settlements.manage',
+                'property_management_reports.view',
+                'property_management_reports.export',
                 'audit_logs.financial_view',
             ]);
 
@@ -256,6 +263,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'property_expenses.view',
                 'owner_settlements.view',
                 'owner_settlements.manage',
+                'property_management_reports.view',
+                'property_management_reports.export',
                 'audit_logs.financial_view',
             ]);
 
