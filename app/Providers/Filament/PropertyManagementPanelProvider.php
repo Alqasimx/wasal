@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\PropertyManagement\Pages\PropertyManagementReports;
 use App\Filament\PropertyManagement\Widgets\AdvancedOperationsOverview;
 use App\Filament\PropertyManagement\Widgets\MaintenanceOverview;
 use App\Filament\PropertyManagement\Widgets\OwnerFinanceOverview;
@@ -89,6 +90,7 @@ class PropertyManagementPanelProvider extends PanelProvider
             )
             ->pages([
                 Dashboard::class,
+                PropertyManagementReports::class,
             ])
             ->widgets([
                 AccountWidget::class,
