@@ -5,6 +5,7 @@ namespace App\Filament\PropertyManagement\Resources\PropertyExpenses\Pages;
 use App\Filament\Pages\AuditedCreateRecord;
 use App\Filament\PropertyManagement\Resources\PropertyExpenses\PropertyExpenseResource;
 use App\Models\PropertyExpense;
+use Illuminate\Validation\ValidationException;
 
 class CreatePropertyExpense extends AuditedCreateRecord
 {
@@ -12,6 +13,15 @@ class CreatePropertyExpense extends AuditedCreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+        $amount = (float) ($data['amount'] ?? 0);
+        $paid = (float) ($data['paid_amount'] ?? 0);
+
+        if ($paid > $amount) {
+            throw ValidationException::withMessages([
+                'paid_amount' => 'المبلغ المسدد لا يمكن أن يتجاوز إجمالي المصروف.',
+            ]);
+        }
+
         $data['created_by_user_id'] = auth()->id();
         $data['payment_status'] = $this->resolvePaymentStatus($data);
 
