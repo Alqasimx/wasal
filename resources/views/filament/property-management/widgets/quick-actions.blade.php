@@ -69,6 +69,12 @@
                     إضافة مستند
                 </a>
             @endif
+
+            @if ($user?->can('property_management_reports.view'))
+                <a href="{{ \App\Filament\PropertyManagement\Pages\PropertyManagementReports::getUrl(panel: 'property-management') }}" class="wasal-panel-switcher__button wasal-panel-switcher__button--primary">
+                    التقارير والمؤشرات
+                </a>
+            @endif
         </div>
     </div>
 </x-filament-widgets::widget>
