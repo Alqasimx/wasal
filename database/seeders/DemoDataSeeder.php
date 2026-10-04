@@ -547,61 +547,67 @@ class DemoDataSeeder extends Seeder
             );
         }
 
-        Notification::updateOrCreate(
-            [
-                'user_id' => $staff->id,
-                'type' => 'maintenance_due',
-                'title' => 'صيانة كهرباء قريبة',
-            ],
-            [
-                'body' => 'موعد فحص لوحة الكهرباء في عمارة وصال السكنية قريب.',
-                'data' => [
-                    'maintenance_request_id' => $maintenanceRequests[0]->id,
-                    'task_id' => Task::query()
-                        ->where('related_type', 'maintenance_request')
-                        ->where('related_id', $maintenanceRequests[0]->id)
-                        ->value('id'),
-                ],
-                'read_at' => null,
-            ],
-        );
+        $notificationRecipients = User::role(['system_admin', 'property_management'])
+            ->where('status', 'active')
+            ->get();
 
-        Notification::updateOrCreate(
-            [
-                'user_id' => $staff->id,
-                'type' => 'rent_due',
-                'title' => 'استحقاق إيجار يحتاج متابعة',
-            ],
-            [
-                'body' => 'يوجد استحقاق إيجار حالي غير مسدد بالكامل لأحد العقود التجريبية.',
-                'data' => [
-                    'rent_due_item_id' => RentDueItem::query()
-                        ->where('tenancy_id', $tenancies[1]->id)
-                        ->latest('due_date')
-                        ->value('id'),
+        foreach ($notificationRecipients as $recipient) {
+            Notification::updateOrCreate(
+                [
+                    'user_id' => $recipient->id,
+                    'type' => 'maintenance_due',
+                    'title' => 'صيانة كهرباء قريبة',
                 ],
-                'read_at' => null,
-            ],
-        );
+                [
+                    'body' => 'موعد فحص لوحة الكهرباء في عمارة وصال السكنية قريب.',
+                    'data' => [
+                        'maintenance_request_id' => $maintenanceRequests[0]->id,
+                        'task_id' => Task::query()
+                            ->where('related_type', 'maintenance_request')
+                            ->where('related_id', $maintenanceRequests[0]->id)
+                            ->value('id'),
+                    ],
+                    'read_at' => null,
+                ],
+            );
 
-        Notification::updateOrCreate(
-            [
-                'user_id' => $staff->id,
-                'type' => 'maintenance_due',
-                'title' => 'تنظيف الألواح الشمسية مجدول',
-            ],
-            [
-                'body' => 'تنظيف الألواح الشمسية في مبنى الأعمال مجدول خلال الأيام القادمة.',
-                'data' => [
-                    'maintenance_request_id' => $maintenanceRequests[2]->id,
-                    'task_id' => Task::query()
-                        ->where('related_type', 'maintenance_request')
-                        ->where('related_id', $maintenanceRequests[2]->id)
-                        ->value('id'),
+            Notification::updateOrCreate(
+                [
+                    'user_id' => $recipient->id,
+                    'type' => 'rent_due',
+                    'title' => 'استحقاق إيجار يحتاج متابعة',
                 ],
-                'read_at' => null,
-            ],
-        );
+                [
+                    'body' => 'يوجد استحقاق إيجار حالي غير مسدد بالكامل لأحد العقود التجريبية.',
+                    'data' => [
+                        'rent_due_item_id' => RentDueItem::query()
+                            ->where('tenancy_id', $tenancies[1]->id)
+                            ->latest('due_date')
+                            ->value('id'),
+                    ],
+                    'read_at' => null,
+                ],
+            );
+
+            Notification::updateOrCreate(
+                [
+                    'user_id' => $recipient->id,
+                    'type' => 'maintenance_due',
+                    'title' => 'تنظيف الألواح الشمسية مجدول',
+                ],
+                [
+                    'body' => 'تنظيف الألواح الشمسية في مبنى الأعمال مجدول خلال الأيام القادمة.',
+                    'data' => [
+                        'maintenance_request_id' => $maintenanceRequests[2]->id,
+                        'task_id' => Task::query()
+                            ->where('related_type', 'maintenance_request')
+                            ->where('related_id', $maintenanceRequests[2]->id)
+                            ->value('id'),
+                    ],
+                    'read_at' => null,
+                ],
+            );
+        }
 
         foreach ($customers as $i => $customer) {
             PropertyRequest::updateOrCreate(
