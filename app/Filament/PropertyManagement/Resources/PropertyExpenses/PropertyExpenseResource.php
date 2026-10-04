@@ -191,6 +191,14 @@ class PropertyExpenseResource extends Resource
                     ->label('المسدد')
                     ->numeric(),
 
+                TextColumn::make('remaining_amount')
+                    ->label('المتبقي')
+                    ->state(fn (PropertyExpense $record): float => max(
+                        0,
+                        (float) $record->amount - (float) $record->paid_amount
+                    ))
+                    ->numeric(),
+
                 TextColumn::make('currency.code')
                     ->label('العملة'),
 
@@ -216,6 +224,21 @@ class PropertyExpenseResource extends Resource
                         PropertyExpense::STATUS_PARTIAL => 'جزئي',
                         PropertyExpense::STATUS_PAID => 'مسدد',
                     ]),
+
+                SelectFilter::make('cost_bearer')
+                    ->label('متحمل المصروف')
+                    ->options([
+                        'owner' => 'المالك',
+                        'tenant' => 'المستأجر',
+                        'wasal' => 'وصال',
+                        'shared' => 'مشترك',
+                    ]),
+
+                SelectFilter::make('property_id')
+                    ->label('العقار')
+                    ->relationship('property', 'internal_code')
+                    ->searchable()
+                    ->preload(),
             ])
             ->striped()
             ->defaultPaginationPageOption(10)
