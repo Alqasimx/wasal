@@ -54,6 +54,7 @@ class PropertyManagementNotifications extends TableWidget
                         'service_due' => 'خدمة مجدولة',
                         'tenancy_due' => 'عقد إيجار',
                         'agreement_due' => 'اتفاق إدارة',
+                        'inspection_due' => 'معاينة عقار',
                         'expense_due' => 'مصروف',
                         'owner_settlement_due' => 'تسوية مالك',
                         'occupancy_due' => 'إشغال وحدة',
