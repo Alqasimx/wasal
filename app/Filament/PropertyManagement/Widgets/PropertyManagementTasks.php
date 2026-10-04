@@ -76,6 +76,31 @@ class PropertyManagementTasks extends TableWidget
                         default => 'جديدة',
                     })
                     ->badge(),
+
+                TextColumn::make('notification_state')
+                    ->label('التنبيه')
+                    ->state(function (Task $record): string {
+                        if ($record->notified_at) {
+                            return 'تم التنبيه';
+                        }
+
+                        if (! $record->due_at) {
+                            return 'بدون موعد';
+                        }
+
+                        $notifyAt = $record->due_at->copy()->subMinutes($record->notify_before_minutes ?? 0);
+
+                        return now()->greaterThanOrEqualTo($notifyAt)
+                            ? 'جاهز للتنبيه'
+                            : 'مجدول';
+                    })
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'تم التنبيه' => 'success',
+                        'جاهز للتنبيه' => 'warning',
+                        'مجدول' => 'info',
+                        default => 'gray',
+                    }),
             ])
             ->recordActions([
                 EditAction::make()
