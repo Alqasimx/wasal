@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\PropertyManagement\Widgets\OccupancyOverview;
+use App\Filament\PropertyManagement\Widgets\PropertyManagementNotifications;
 use App\Filament\PropertyManagement\Widgets\PropertyManagementStatsOverview;
 use App\Filament\PropertyManagement\Widgets\PropertyManagementTasks;
 use App\Filament\Resources\Currencies\CurrencyResource;
@@ -84,6 +85,7 @@ class PropertyManagementPanelProvider extends PanelProvider
                 PropertyManagementStatsOverview::class,
                 OccupancyOverview::class,
                 PropertyManagementTasks::class,
+                PropertyManagementNotifications::class,
             ])
             ->middleware([
                 EncryptCookies::class,
