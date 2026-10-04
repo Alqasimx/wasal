@@ -38,7 +38,7 @@ class OwnerFinanceOverview extends StatsOverviewWidget
         return [
             Stat::make('تسويات تنتظر الاعتماد', $draft)
                 ->description('راجع التحصيلات والمصروفات ورسوم وصال')
-                ->icon('heroicon-o-document-currency-dollar')
+                ->icon('heroicon-o-banknotes')
                 ->url(OwnerSettlementResource::getUrl('index', panel: 'property-management')),
 
             Stat::make('تسويات معتمدة غير مدفوعة', $approved)
