@@ -28,28 +28,57 @@ class RentDueScheduleService
             $through = $tenancy->ends_at->copy();
         }
 
+        $preferredDay = (int) ($tenancy->due_day ?: $tenancy->starts_at->day);
         $dueDate = $this->firstDueDate($tenancy);
-        $created = 0;
+        $dates = [];
 
         while ($dueDate->lte($through)) {
-            $item = RentDueItem::firstOrCreate(
-                [
-                    'tenancy_id' => $tenancy->id,
-                    'due_date' => $dueDate->toDateString(),
-                ],
-                [
-                    'amount' => $tenancy->rent_amount,
-                    'currency_id' => $tenancy->currency_id,
-                    'status' => $this->statusForDate($dueDate, (int) $tenancy->grace_days),
-                    'paid_amount' => 0,
-                ],
+            $dates[] = $dueDate->toDateString();
+            $dueDate = $this->nextDueDate(
+                date: $dueDate,
+                frequency: $tenancy->payment_frequency,
+                preferredDay: $preferredDay,
             );
+        }
 
-            if ($item->wasRecentlyCreated) {
+        if ($dates !== []) {
+            RentDueItem::query()
+                ->where('tenancy_id', $tenancy->id)
+                ->whereDate('due_date', '>=', today())
+                ->where('paid_amount', '<=', 0)
+                ->whereNotIn('status', [RentDueItem::STATUS_PAID])
+                ->whereNotIn('due_date', $dates)
+                ->update(['status' => RentDueItem::STATUS_CANCELLED]);
+        }
+
+        $created = 0;
+
+        foreach ($dates as $date) {
+            $item = RentDueItem::query()
+                ->firstOrNew([
+                    'tenancy_id' => $tenancy->id,
+                    'due_date' => $date,
+                ]);
+
+            if (! $item->exists) {
                 $created++;
             }
 
-            $dueDate = $this->nextDueDate($dueDate, $tenancy->payment_frequency);
+            if (! $item->exists || (float) $item->paid_amount <= 0) {
+                $carbonDate = Carbon::parse($date);
+
+                $item->fill([
+                    'amount' => $tenancy->rent_amount,
+                    'currency_id' => $tenancy->currency_id,
+                    'status' => $this->statusForDate(
+                        $carbonDate,
+                        (int) $tenancy->grace_days,
+                    ),
+                    'paid_amount' => $item->paid_amount ?? 0,
+                ]);
+
+                $item->save();
+            }
         }
 
         $this->syncStatuses($tenancy);
@@ -134,27 +163,40 @@ class RentDueScheduleService
     private function firstDueDate(Tenancy $tenancy): Carbon
     {
         $startsAt = $tenancy->starts_at->copy()->startOfDay();
-        $day = (int) ($tenancy->due_day ?: $startsAt->day);
+        $preferredDay = (int) ($tenancy->due_day ?: $startsAt->day);
 
         $candidate = $startsAt->copy()
-            ->day(min($day, $startsAt->daysInMonth));
+            ->startOfMonth()
+            ->day(min($preferredDay, $startsAt->daysInMonth));
 
         if ($candidate->lt($startsAt)) {
-            $candidate = $this->nextDueDate($candidate, $tenancy->payment_frequency);
-            $candidate->day(min($day, $candidate->daysInMonth));
+            $candidate = $this->nextDueDate(
+                date: $candidate,
+                frequency: $tenancy->payment_frequency,
+                preferredDay: $preferredDay,
+            );
         }
 
         return $candidate;
     }
 
-    private function nextDueDate(Carbon $date, string $frequency): Carbon
-    {
-        return match ($frequency) {
-            Tenancy::FREQUENCY_QUARTERLY => $date->copy()->addMonthsNoOverflow(3),
-            Tenancy::FREQUENCY_SEMIANNUAL => $date->copy()->addMonthsNoOverflow(6),
-            Tenancy::FREQUENCY_ANNUAL => $date->copy()->addYear(),
-            default => $date->copy()->addMonthNoOverflow(),
+    private function nextDueDate(
+        Carbon $date,
+        string $frequency,
+        int $preferredDay,
+    ): Carbon {
+        $months = match ($frequency) {
+            Tenancy::FREQUENCY_QUARTERLY => 3,
+            Tenancy::FREQUENCY_SEMIANNUAL => 6,
+            Tenancy::FREQUENCY_ANNUAL => 12,
+            default => 1,
         };
+
+        $next = $date->copy()
+            ->startOfMonth()
+            ->addMonthsNoOverflow($months);
+
+        return $next->day(min($preferredDay, $next->daysInMonth));
     }
 
     private function statusForDate(Carbon $date, int $graceDays): string
