@@ -69,6 +69,7 @@ class PropertyManagementPanelProvider extends PanelProvider
                 NavigationGroup::make()->label('الأصول والإشغال'),
                 NavigationGroup::make()->label('الإيجارات والتحصيل'),
                 NavigationGroup::make()->label('الخدمات والصيانة'),
+                NavigationGroup::make()->label('العمليات المتقدمة'),
                 NavigationGroup::make()->label('الملاك والتسويات'),
                 NavigationGroup::make()->label('التقارير والإعدادات'),
             ])
