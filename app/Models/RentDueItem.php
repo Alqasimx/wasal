@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RentDueItem extends Model
 {
@@ -31,15 +32,9 @@ class RentDueItem extends Model
         ];
     }
 
-    public function tenancy(): BelongsTo
-    {
-        return $this->belongsTo(Tenancy::class);
-    }
-
-    public function currency(): BelongsTo
-    {
-        return $this->belongsTo(Currency::class);
-    }
+    public function tenancy(): BelongsTo { return $this->belongsTo(Tenancy::class); }
+    public function currency(): BelongsTo { return $this->belongsTo(Currency::class); }
+    public function payments(): HasMany { return $this->hasMany(RentPayment::class); }
 
     public function isDue(): bool
     {
