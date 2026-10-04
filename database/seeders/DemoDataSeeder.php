@@ -7,9 +7,12 @@ use App\Models\City;
 use App\Models\Currency;
 use App\Models\MaintenanceRequest;
 use App\Models\Notification;
+use App\Services\InspectionWorkflowService;
 use App\Services\OwnerSettlementService;
 use App\Models\Property;
 use App\Models\PropertyExpense;
+use App\Models\PropertyDocument;
+use App\Models\PropertyInspection;
 use App\Models\PropertyListing;
 use App\Models\PropertyManagementAgreement;
 use App\Models\PropertyOwner;
@@ -25,6 +28,8 @@ use App\Models\Task;
 use App\Models\Tenancy;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\UtilityMeter;
+use App\Models\UtilityMeterReading;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -568,6 +573,151 @@ class DemoDataSeeder extends Seeder
                         : Task::STATUS_PENDING,
                     'notify_before_minutes' => 1440,
                     'notified_at' => null,
+                ],
+            );
+        }
+
+        $inspectionDefinitions = [
+            [
+                'number' => 'DEMO-INS-001',
+                'property' => $properties[0],
+                'unit' => $units['A-101'],
+                'tenancy' => $tenancies[0],
+                'type' => PropertyInspection::TYPE_PERIODIC,
+                'status' => PropertyInspection::STATUS_SCHEDULED,
+                'scheduled_at' => now()->addDays(2),
+                'score' => null,
+                'notes' => 'معاينة دورية تجريبية للوحدة.',
+            ],
+            [
+                'number' => 'DEMO-INS-002',
+                'property' => $properties[1],
+                'unit' => $units['V-01'],
+                'tenancy' => $tenancies[1],
+                'type' => PropertyInspection::TYPE_CHECK_IN,
+                'status' => PropertyInspection::STATUS_COMPLETED,
+                'scheduled_at' => now()->subDays(10),
+                'score' => 4,
+                'notes' => 'معاينة استلام تجريبية مكتملة.',
+            ],
+            [
+                'number' => 'DEMO-INS-003',
+                'property' => $properties[2],
+                'unit' => $units['O-101'],
+                'tenancy' => $tenancies[2],
+                'type' => PropertyInspection::TYPE_CONDITION,
+                'status' => PropertyInspection::STATUS_IN_PROGRESS,
+                'scheduled_at' => now()->addDay(),
+                'score' => 3,
+                'notes' => 'تقييم حالة تجريبي للمكتب.',
+            ],
+        ];
+
+        foreach ($inspectionDefinitions as $definition) {
+            $inspection = PropertyInspection::updateOrCreate(
+                ['inspection_number' => $definition['number']],
+                [
+                    'property_id' => $definition['property']->id,
+                    'property_unit_id' => $definition['unit']->id,
+                    'tenancy_id' => $definition['tenancy']->id,
+                    'inspection_type' => $definition['type'],
+                    'status' => $definition['status'],
+                    'scheduled_at' => $definition['scheduled_at'],
+                    'started_at' => $definition['status'] === PropertyInspection::STATUS_IN_PROGRESS
+                        ? now()->subHour()
+                        : null,
+                    'completed_at' => $definition['status'] === PropertyInspection::STATUS_COMPLETED
+                        ? now()->subDays(10)->addHour()
+                        : null,
+                    'inspector_user_id' => $staff->id,
+                    'condition_score' => $definition['score'],
+                    'findings' => $definition['score'] ? ['condition' => 'بيانات تجريبية'] : null,
+                    'attachments' => [],
+                    'notes' => $definition['notes'],
+                    'created_by_user_id' => $staff->id,
+                ],
+            );
+
+            app(InspectionWorkflowService::class)->syncTask($inspection->fresh());
+        }
+
+        $meterDefinitions = [
+            ['DEMO-METER-E-001', UtilityMeter::TYPE_ELECTRICITY, $properties[0], $units['A-101'], 'kWh', 1250.000, 1325.500],
+            ['DEMO-METER-W-001', UtilityMeter::TYPE_WATER, $properties[1], $units['V-01'], 'm3', 210.000, 226.250],
+            ['DEMO-METER-E-002', UtilityMeter::TYPE_ELECTRICITY, $properties[2], $units['O-101'], 'kWh', 890.000, 945.750],
+        ];
+
+        foreach ($meterDefinitions as [$number, $type, $property, $unit, $measure, $previous, $current]) {
+            $meter = UtilityMeter::updateOrCreate(
+                [
+                    'property_id' => $property->id,
+                    'meter_number' => $number,
+                ],
+                [
+                    'property_unit_id' => $unit->id,
+                    'meter_type' => $type,
+                    'unit_of_measure' => $measure,
+                    'is_active' => true,
+                    'notes' => 'عداد تجريبي.',
+                ],
+            );
+
+            $firstAt = now()->subMonth()->startOfDay();
+            $latestAt = now()->subDay()->startOfDay();
+
+            UtilityMeterReading::updateOrCreate(
+                [
+                    'utility_meter_id' => $meter->id,
+                    'reading_at' => $firstAt,
+                ],
+                [
+                    'reading_value' => $previous,
+                    'previous_value' => null,
+                    'consumption' => null,
+                    'recorded_by_user_id' => $staff->id,
+                    'notes' => 'قراءة افتتاحية تجريبية.',
+                ],
+            );
+
+            UtilityMeterReading::updateOrCreate(
+                [
+                    'utility_meter_id' => $meter->id,
+                    'reading_at' => $latestAt,
+                ],
+                [
+                    'reading_value' => $current,
+                    'previous_value' => $previous,
+                    'consumption' => $current - $previous,
+                    'recorded_by_user_id' => $staff->id,
+                    'notes' => 'قراءة دورية تجريبية.',
+                ],
+            );
+        }
+
+        $documentDefinitions = [
+            ['DEMO-DOC-001', $properties[0], $units['A-101'], $tenancies[0], 'tenancy_contract', 'عقد إيجار شقة 101', today()->addMonths(9)],
+            ['DEMO-DOC-002', $properties[1], $units['V-01'], null, 'permit', 'تصريح صيانة الفيلا', today()->addDays(20)],
+            ['DEMO-DOC-003', $properties[2], null, null, 'ownership', 'مستند ملكية مبنى الأعمال', null],
+        ];
+
+        foreach ($documentDefinitions as [$reference, $property, $unit, $tenancy, $type, $title, $expiresAt]) {
+            PropertyDocument::updateOrCreate(
+                [
+                    'property_id' => $property->id,
+                    'title' => $reference.' — '.$title,
+                ],
+                [
+                    'property_unit_id' => $unit?->id,
+                    'tenancy_id' => $tenancy?->id,
+                    'property_management_agreement_id' => PropertyManagementAgreement::query()
+                        ->where('property_id', $property->id)
+                        ->value('id'),
+                    'document_type' => $type,
+                    'issued_at' => today()->subMonths(3),
+                    'expires_at' => $expiresAt,
+                    'status' => PropertyDocument::STATUS_ACTIVE,
+                    'notes' => 'مستند تجريبي لاختبار قسم المرفقات.',
+                    'created_by_user_id' => $staff->id,
                 ],
             );
         }
