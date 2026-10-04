@@ -262,6 +262,24 @@ class MaintenanceRequestResource extends Resource
                         MaintenanceRequest::PRIORITY_HIGH => 'عالية',
                         MaintenanceRequest::PRIORITY_URGENT => 'عاجلة',
                     ]),
+
+                SelectFilter::make('property_service_id')
+                    ->label('الخدمة')
+                    ->relationship('service', 'name_ar')
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('property_id')
+                    ->label('العقار')
+                    ->relationship('property', 'internal_code')
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('property_vendor_id')
+                    ->label('الفني / المورد')
+                    ->relationship('vendor', 'name')
+                    ->searchable()
+                    ->preload(),
             ])
             ->striped()
             ->defaultPaginationPageOption(10)
