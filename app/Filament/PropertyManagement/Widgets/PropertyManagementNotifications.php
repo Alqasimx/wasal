@@ -49,6 +49,13 @@ class PropertyManagementNotifications extends TableWidget
                         'maintenance_due' => 'صيانة',
                         'maintenance_urgent' => 'صيانة عاجلة',
                         'rent_due' => 'استحقاق إيجار',
+                        'service_due' => 'خدمة مجدولة',
+                        'tenancy_due' => 'عقد إيجار',
+                        'agreement_due' => 'اتفاق إدارة',
+                        'expense_due' => 'مصروف',
+                        'owner_settlement_due' => 'تسوية مالك',
+                        'occupancy_due' => 'إشغال وحدة',
+                        'vendor_due' => 'مورد / فني',
                         'task_due_soon' => 'مهمة',
                         default => 'تنبيه',
                     })
