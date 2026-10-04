@@ -5,6 +5,7 @@ namespace App\Filament\PropertyManagement\Resources\PropertyExpenses\Pages;
 use App\Filament\Pages\AuditedEditRecord;
 use App\Filament\PropertyManagement\Resources\PropertyExpenses\PropertyExpenseResource;
 use App\Models\PropertyExpense;
+use Illuminate\Validation\ValidationException;
 
 class EditPropertyExpense extends AuditedEditRecord
 {
@@ -14,6 +15,12 @@ class EditPropertyExpense extends AuditedEditRecord
     {
         $amount = (float) ($data['amount'] ?? 0);
         $paid = (float) ($data['paid_amount'] ?? 0);
+
+        if ($paid > $amount) {
+            throw ValidationException::withMessages([
+                'paid_amount' => 'المبلغ المسدد لا يمكن أن يتجاوز إجمالي المصروف.',
+            ]);
+        }
 
         $data['payment_status'] = match (true) {
             $amount > 0 && $paid >= $amount => PropertyExpense::STATUS_PAID,
