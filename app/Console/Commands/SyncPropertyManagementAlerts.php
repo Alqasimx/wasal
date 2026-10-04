@@ -49,6 +49,7 @@ class SyncPropertyManagementAlerts extends Command
                     dueAt: $agreement->ends_at->copy()->setTime(9, 0),
                     assigneeId: $agreement->assigned_manager_user_id ?: $fallbackUserId,
                     creatorId: $fallbackUserId,
+                    notifyBeforeMinutes: $days * 1440,
                 );
             });
 
@@ -65,6 +66,7 @@ class SyncPropertyManagementAlerts extends Command
                     dueAt: $document->expires_at->copy()->setTime(9, 0),
                     assigneeId: $fallbackUserId,
                     creatorId: $fallbackUserId,
+                    notifyBeforeMinutes: 10080,
                 );
             });
 
@@ -78,9 +80,10 @@ class SyncPropertyManagementAlerts extends Command
                     relatedId: $settlement->id,
                     title: 'سداد تسوية مالك '.$settlement->settlement_number,
                     description: 'تسوية معتمدة منذ أكثر من 3 أيام ولم تسجل كمدفوعة بعد.',
-                    dueAt: now()->addHour(),
+                    dueAt: now(),
                     assigneeId: $fallbackUserId,
                     creatorId: $fallbackUserId,
+                    notifyBeforeMinutes: 0,
                 );
             });
 
@@ -97,6 +100,7 @@ class SyncPropertyManagementAlerts extends Command
         $dueAt,
         int $assigneeId,
         int $creatorId,
+        int $notifyBeforeMinutes = 1440,
     ): int {
         $exists = Task::query()
             ->where('related_type', $relatedType)
@@ -118,7 +122,7 @@ class SyncPropertyManagementAlerts extends Command
             'due_at' => $dueAt,
             'recurrence' => Task::RECURRENCE_ONCE,
             'status' => Task::STATUS_PENDING,
-            'notify_before_minutes' => 1440,
+            'notify_before_minutes' => $notifyBeforeMinutes,
         ]);
 
         return 1;
