@@ -25,6 +25,8 @@ class DemoAlertSequenceTest extends TestCase
             ->where('email', 'demo.manager@wasal.local')
             ->firstOrFail();
 
+        Notification::query()->delete();
+
         $this->artisan('wasal:seed-demo-alert-sequence', [
             '--email' => $user->email,
         ])->assertSuccessful();
