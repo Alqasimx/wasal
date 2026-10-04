@@ -99,7 +99,30 @@ class PropertyVendorResource extends Resource
 
                 TextColumn::make('service_categories')
                     ->label('التخصصات')
-                    ->formatStateUsing(fn ($state): string => is_array($state) ? implode('، ', $state) : '—')
+                    ->formatStateUsing(function ($state): string {
+                        if (! is_array($state)) {
+                            return '—';
+                        }
+
+                        $labels = [
+                            'electrical' => 'كهرباء',
+                            'plumbing' => 'سباكة',
+                            'air_conditioning' => 'تكييف',
+                            'solar' => 'طاقة شمسية',
+                            'cleaning' => 'نظافة',
+                            'pumps' => 'مضخات ومياه',
+                            'painting' => 'دهان',
+                            'carpentry' => 'نجارة',
+                            'elevators' => 'مصاعد',
+                            'security' => 'كاميرات وأمن',
+                            'network' => 'شبكات وإنترنت',
+                            'general' => 'صيانة عامة',
+                        ];
+
+                        return collect($state)
+                            ->map(fn (string $item): string => $labels[$item] ?? $item)
+                            ->join('، ');
+                    })
                     ->limit(35)
                     ->wrap(),
 
