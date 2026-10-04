@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\MaintenanceRequest;
 use App\Models\Notification;
+use App\Models\OwnerSettlement;
 use App\Models\Property;
 use App\Models\PropertyListing;
 use App\Models\PropertyManagementAgreement;
@@ -36,6 +37,7 @@ class DemoDataSeederTest extends TestCase
         $this->assertSame(3, MaintenanceRequest::query()->where('reference_number', 'like', 'DEMO-MNT-%')->count());
         $this->assertSame(3, RentPayment::query()->where('receipt_number', 'like', 'DEMO-RCP-%')->count());
         $this->assertSame(3, Notification::query()->count());
+        $this->assertSame(3, OwnerSettlement::query()->count());
     }
 
     public function test_demo_seeder_can_be_run_twice_without_duplicate_demo_records(): void
