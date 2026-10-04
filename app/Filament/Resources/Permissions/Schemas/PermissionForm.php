@@ -8,6 +8,9 @@ use Filament\Schemas\Schema;
 class PermissionForm
 {
     private const CORE_PERMISSIONS = [
+        'panels.admin.access',
+        'panels.real_estate.access',
+        'panels.property_management.access',
         'users.view',
         'users.manage',
         'roles.view',
@@ -38,6 +41,20 @@ class PermissionForm
         'tenancies.manage',
         'rent_due_items.view',
         'rent_due_items.manage',
+        'rent_payments.view',
+        'rent_payments.manage',
+        'property_management_agreements.view',
+        'property_management_agreements.manage',
+        'property_services.view',
+        'property_services.manage',
+        'property_service_schedules.view',
+        'property_service_schedules.manage',
+        'property_vendors.view',
+        'property_vendors.manage',
+        'maintenance_requests.view',
+        'maintenance_requests.manage',
+        'property_expenses.view',
+        'property_expenses.manage',
         'tasks.view',
         'tasks.manage',
         'banks.view',
@@ -60,11 +77,7 @@ class PermissionForm
                     ->disabled(
                         fn ($record): bool =>
                             $record !== null &&
-                            in_array(
-                                $record->name,
-                                self::CORE_PERMISSIONS,
-                                true
-                            )
+                            in_array($record->name, self::CORE_PERMISSIONS, true)
                     ),
 
                 TextInput::make('guard_name')
@@ -75,11 +88,7 @@ class PermissionForm
                     ->disabled(
                         fn ($record): bool =>
                             $record !== null &&
-                            in_array(
-                                $record->name,
-                                self::CORE_PERMISSIONS,
-                                true
-                            )
+                            in_array($record->name, self::CORE_PERMISSIONS, true)
                     ),
             ]);
     }
