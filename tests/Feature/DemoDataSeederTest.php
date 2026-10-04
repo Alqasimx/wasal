@@ -6,6 +6,8 @@ use App\Models\MaintenanceRequest;
 use App\Models\Notification;
 use App\Models\OwnerSettlement;
 use App\Models\Property;
+use App\Models\PropertyDocument;
+use App\Models\PropertyInspection;
 use App\Models\PropertyListing;
 use App\Models\PropertyManagementAgreement;
 use App\Models\PropertyRequest;
@@ -14,6 +16,8 @@ use App\Models\PropertyVendor;
 use App\Models\RentPayment;
 use App\Models\Tenancy;
 use App\Models\Tenant;
+use App\Models\UtilityMeter;
+use App\Models\UtilityMeterReading;
 use Database\Seeders\DemoDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -38,6 +42,10 @@ class DemoDataSeederTest extends TestCase
         $this->assertSame(3, RentPayment::query()->where('receipt_number', 'like', 'DEMO-RCP-%')->count());
         $this->assertSame(3, Notification::query()->count());
         $this->assertSame(3, OwnerSettlement::query()->count());
+        $this->assertSame(3, PropertyInspection::query()->where('inspection_number', 'like', 'DEMO-INS-%')->count());
+        $this->assertSame(3, UtilityMeter::query()->where('meter_number', 'like', 'DEMO-METER-%')->count());
+        $this->assertSame(6, UtilityMeterReading::query()->count());
+        $this->assertSame(3, PropertyDocument::query()->where('title', 'like', 'DEMO-DOC-%')->count());
     }
 
     public function test_demo_seeder_can_be_run_twice_without_duplicate_demo_records(): void
