@@ -46,6 +46,7 @@ class PropertyManagementNotifications extends TableWidget
                     ->label('النوع')
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'maintenance_due' => 'صيانة',
+                        'maintenance_urgent' => 'صيانة عاجلة',
                         'rent_due' => 'استحقاق إيجار',
                         'task_due_soon' => 'مهمة',
                         default => 'تنبيه',
