@@ -11,16 +11,13 @@ class RolesAndPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        app(PermissionRegistrar::class)
-            ->forgetCachedPermissions();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Permissions
-        |--------------------------------------------------------------------------
-        */
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $permissions = [
+            'panels.admin.access',
+            'panels.real_estate.access',
+            'panels.property_management.access',
+
             'users.view',
             'users.manage',
 
@@ -66,6 +63,27 @@ class RolesAndPermissionsSeeder extends Seeder
             'rent_due_items.view',
             'rent_due_items.manage',
 
+            'rent_payments.view',
+            'rent_payments.manage',
+
+            'property_management_agreements.view',
+            'property_management_agreements.manage',
+
+            'property_services.view',
+            'property_services.manage',
+
+            'property_service_schedules.view',
+            'property_service_schedules.manage',
+
+            'property_vendors.view',
+            'property_vendors.manage',
+
+            'maintenance_requests.view',
+            'maintenance_requests.manage',
+
+            'property_expenses.view',
+            'property_expenses.manage',
+
             'tasks.view',
             'tasks.manage',
 
@@ -75,10 +93,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'settings.view',
             'settings.manage',
 
-            // مشاهدة سجل التدقيق الكامل
             'audit_logs.view',
-
-            // مشاهدة السجلات المالية فقط
             'audit_logs.financial_view',
         ];
 
@@ -88,12 +103,6 @@ class RolesAndPermissionsSeeder extends Seeder
                 'guard_name' => 'web',
             ]);
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Roles
-        |--------------------------------------------------------------------------
-        */
 
         $roles = [
             'user',
@@ -117,6 +126,8 @@ class RolesAndPermissionsSeeder extends Seeder
 
         Role::findByName('customer_service', 'web')
             ->syncPermissions([
+                'panels.admin.access',
+                'panels.real_estate.access',
                 'users.view',
                 'geography.view',
                 'currencies.view',
@@ -126,6 +137,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
         Role::findByName('property_reviewer', 'web')
             ->syncPermissions([
+                'panels.real_estate.access',
                 'geography.view',
                 'currencies.view',
                 'property_types.view',
@@ -148,40 +160,62 @@ class RolesAndPermissionsSeeder extends Seeder
 
         Role::findByName('property_management', 'web')
             ->syncPermissions([
+                'panels.property_management.access',
                 'users.view',
                 'geography.view',
                 'currencies.view',
                 'property_types.view',
                 'property_features.view',
                 'properties.view',
-                'property_listings.view',
                 'property_units.view',
+                'property_units.manage',
                 'property_owners.view',
-                'property_requests.view',
+                'property_owners.manage',
                 'tenants.view',
                 'tenants.manage',
                 'tenancies.view',
                 'tenancies.manage',
                 'rent_due_items.view',
                 'rent_due_items.manage',
+                'rent_payments.view',
+                'rent_payments.manage',
+                'property_management_agreements.view',
+                'property_management_agreements.manage',
+                'property_services.view',
+                'property_services.manage',
+                'property_service_schedules.view',
+                'property_service_schedules.manage',
+                'property_vendors.view',
+                'property_vendors.manage',
+                'maintenance_requests.view',
+                'maintenance_requests.manage',
+                'property_expenses.view',
+                'property_expenses.manage',
                 'tasks.view',
                 'tasks.manage',
             ]);
 
         Role::findByName('accountant', 'web')
             ->syncPermissions([
+                'panels.admin.access',
+                'panels.property_management.access',
                 'banks.view',
                 'banks.manage',
                 'currencies.view',
                 'tenants.view',
                 'tenancies.view',
                 'rent_due_items.view',
-                'rent_due_items.manage',
+                'rent_payments.view',
+                'rent_payments.manage',
+                'property_expenses.view',
+                'property_expenses.manage',
                 'audit_logs.financial_view',
             ]);
 
         Role::findByName('financial_approver', 'web')
             ->syncPermissions([
+                'panels.admin.access',
+                'panels.property_management.access',
                 'banks.view',
                 'banks.manage',
                 'currencies.view',
@@ -190,6 +224,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'tenants.view',
                 'tenancies.view',
                 'rent_due_items.view',
+                'rent_payments.view',
+                'property_expenses.view',
                 'audit_logs.financial_view',
             ]);
 
@@ -201,7 +237,6 @@ class RolesAndPermissionsSeeder extends Seeder
                 ->get()
         );
 
-        app(PermissionRegistrar::class)
-            ->forgetCachedPermissions();
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }
