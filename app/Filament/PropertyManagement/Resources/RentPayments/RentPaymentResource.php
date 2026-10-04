@@ -5,10 +5,13 @@ namespace App\Filament\PropertyManagement\Resources\RentPayments;
 use App\Filament\Concerns\HasResourcePermissions;
 use App\Filament\PropertyManagement\Resources\RentPayments\Pages\CreateRentPayment;
 use App\Filament\PropertyManagement\Resources\RentPayments\Pages\ListRentPayments;
+use App\Filament\PropertyManagement\Resources\RentPayments\Pages\ViewRentPayment;
+use App\Filament\PropertyManagement\Resources\RentPayments\Schemas\RentPaymentInfolist;
 use App\Models\RentPayment;
 use App\Services\RentPaymentService;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -109,6 +112,11 @@ class RentPaymentResource extends Resource
         ]);
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return RentPaymentInfolist::configure($schema);
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -188,6 +196,8 @@ class RentPaymentResource extends Resource
             ->striped()
             ->defaultPaginationPageOption(10)
             ->recordActions([
+                ViewAction::make()->label('سند القبض'),
+
                 Action::make('void')
                     ->label('إلغاء الدفعة')
                     ->color('danger')
@@ -241,6 +251,7 @@ class RentPaymentResource extends Resource
         return [
             'index' => ListRentPayments::route('/'),
             'create' => CreateRentPayment::route('/create'),
+            'view' => ViewRentPayment::route('/{record}'),
         ];
     }
 }
