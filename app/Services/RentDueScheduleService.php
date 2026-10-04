@@ -57,12 +57,16 @@ class RentDueScheduleService
 
         foreach ($dates as $date) {
             $item = RentDueItem::query()
-                ->firstOrNew([
+                ->where('tenancy_id', $tenancy->id)
+                ->whereDate('due_date', $date)
+                ->first();
+
+            if (! $item) {
+                $item = new RentDueItem([
                     'tenancy_id' => $tenancy->id,
                     'due_date' => $date,
                 ]);
 
-            if (! $item->exists) {
                 $created++;
             }
 
