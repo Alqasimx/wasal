@@ -3,6 +3,7 @@
 namespace App\Filament\PropertyManagement\Widgets;
 
 use App\Models\Notification as WasalNotification;
+use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -63,6 +64,14 @@ class PropertyManagementNotifications extends TableWidget
                     ->label('وقت الإشعار')
                     ->dateTime('Y-m-d H:i')
                     ->sortable(),
+            ])
+            ->recordActions([
+                Action::make('mark_read')
+                    ->label('تمت القراءة')
+                    ->icon('heroicon-o-check')
+                    ->visible(fn (WasalNotification $record): bool => $record->read_at === null)
+                    ->action(fn (WasalNotification $record) =>
+                        $record->update(['read_at' => now()])),
             ]);
     }
 }
