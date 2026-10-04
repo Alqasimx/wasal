@@ -8,6 +8,7 @@ use App\Filament\Resources\RentDueItems\Pages\EditRentDueItem;
 use App\Filament\Resources\RentDueItems\Pages\ListRentDueItems;
 use App\Filament\Resources\RentDueItems\Schemas\RentDueItemForm;
 use App\Filament\Resources\RentDueItems\Tables\RentDueItemsTable;
+use App\Models\RentPayment;
 use App\Models\RentDueItem;
 use BackedEnum;
 use Filament\Facades\Filament;
@@ -46,6 +47,14 @@ class RentDueItemResource extends Resource
     public static function table(Table $table): Table
     {
         return RentDueItemsTable::configure($table);
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return (auth()->user()?->can(static::$managePermission) ?? false)
+            && ! $record->payments()
+                ->where('status', RentPayment::STATUS_POSTED)
+                ->exists();
     }
 
     public static function canDelete(Model $record): bool
