@@ -147,6 +147,16 @@ class PropertyServiceResource extends Resource
 
                 TextColumn::make('default_frequency')
                     ->label('التكرار')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        PropertyService::FREQUENCY_DAILY => 'يومي',
+                        PropertyService::FREQUENCY_WEEKLY => 'أسبوعي',
+                        PropertyService::FREQUENCY_MONTHLY => 'شهري',
+                        PropertyService::FREQUENCY_QUARTERLY => 'كل 3 أشهر',
+                        PropertyService::FREQUENCY_SEMIANNUAL => 'كل 6 أشهر',
+                        PropertyService::FREQUENCY_ANNUAL => 'سنوي',
+                        PropertyService::FREQUENCY_CUSTOM_DAYS => 'أيام مخصصة',
+                        default => 'مرة واحدة',
+                    })
                     ->badge(),
 
                 IconColumn::make('creates_task')
