@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\MaintenanceRequest;
+use App\Models\Notification;
 use App\Models\Task;
 use App\Models\User;
 
@@ -53,7 +54,8 @@ class MaintenanceWorkflowService
 
         $payload = [
             'title' => 'صيانة: '.$request->title,
-            'description' => 'الطلب '.$request->reference_number.' — العقار: '.($request->property?->internal_code ?? '—'),
+            'description' => 'الطلب '.$request->reference_number
+                .' — العقار: '.($request->property?->internal_code ?? '—'),
             'assigned_to_user_id' => $assigneeId,
             'due_at' => $request->scheduled_at ?? now()->addDay(),
             'recurrence' => Task::RECURRENCE_ONCE,
@@ -63,14 +65,34 @@ class MaintenanceWorkflowService
 
         if ($task) {
             $task->update($payload);
-
-            return $task;
+        } else {
+            $task = Task::create($payload + [
+                'related_type' => 'maintenance_request',
+                'related_id' => $request->id,
+                'created_by_user_id' => auth()->id() ?: $request->created_by_user_id,
+            ]);
         }
 
-        return Task::create($payload + [
-            'related_type' => 'maintenance_request',
-            'related_id' => $request->id,
-            'created_by_user_id' => auth()->id() ?: $request->created_by_user_id,
-        ]);
+        if ($request->priority === MaintenanceRequest::PRIORITY_URGENT) {
+            Notification::updateOrCreate(
+                [
+                    'user_id' => $assigneeId,
+                    'type' => 'maintenance_urgent',
+                    'title' => 'صيانة عاجلة: '.$request->title,
+                ],
+                [
+                    'body' => 'الطلب '.$request->reference_number
+                        .' يحتاج متابعة عاجلة في العقار '
+                        .($request->property?->internal_code ?? '—').'.',
+                    'data' => [
+                        'maintenance_request_id' => $request->id,
+                        'task_id' => $task->id,
+                    ],
+                    'read_at' => null,
+                ],
+            );
+        }
+
+        return $task;
     }
 }
