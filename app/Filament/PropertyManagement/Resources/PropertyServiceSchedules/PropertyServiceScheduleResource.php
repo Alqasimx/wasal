@@ -159,6 +159,16 @@ class PropertyServiceScheduleResource extends Resource
 
                 TextColumn::make('frequency')
                     ->label('التكرار')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        PropertyService::FREQUENCY_DAILY => 'يومي',
+                        PropertyService::FREQUENCY_WEEKLY => 'أسبوعي',
+                        PropertyService::FREQUENCY_MONTHLY => 'شهري',
+                        PropertyService::FREQUENCY_QUARTERLY => 'كل 3 أشهر',
+                        PropertyService::FREQUENCY_SEMIANNUAL => 'كل 6 أشهر',
+                        PropertyService::FREQUENCY_ANNUAL => 'سنوي',
+                        PropertyService::FREQUENCY_CUSTOM_DAYS => 'أيام مخصصة',
+                        default => 'مرة واحدة',
+                    })
                     ->badge(),
 
                 TextColumn::make('assignee.name')
@@ -177,6 +187,18 @@ class PropertyServiceScheduleResource extends Resource
                 SelectFilter::make('is_active')
                     ->label('الحالة')
                     ->options([1 => 'نشط', 0 => 'موقوف']),
+
+                SelectFilter::make('property_service_id')
+                    ->label('الخدمة')
+                    ->relationship('service', 'name_ar')
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('property_id')
+                    ->label('العقار')
+                    ->relationship('property', 'internal_code')
+                    ->searchable()
+                    ->preload(),
             ])
             ->striped()
             ->defaultPaginationPageOption(10)
