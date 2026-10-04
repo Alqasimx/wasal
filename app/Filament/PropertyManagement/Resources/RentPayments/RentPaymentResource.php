@@ -31,7 +31,7 @@ class RentPaymentResource extends Resource
     protected static ?string $model = RentPayment::class;
     protected static string $viewPermission = 'rent_payments.view';
     protected static string $managePermission = 'rent_payments.manage';
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
     protected static ?string $navigationLabel = 'التحصيلات والدفعات';
     protected static ?string $modelLabel = 'دفعة إيجار';
     protected static ?string $pluralModelLabel = 'التحصيلات والدفعات';
@@ -50,6 +50,7 @@ class RentPaymentResource extends Resource
 
                     return '#'.$record->id.' — '.$tenant.' — '.$property.' — المتبقي: '.number_format($remaining, 2);
                 })
+                ->default(fn (): ?int => request()->integer('rent_due_item_id') ?: null)
                 ->searchable()
                 ->preload()
                 ->required(),
@@ -115,7 +116,8 @@ class RentPaymentResource extends Resource
             ->columns([
                 TextColumn::make('receipt_number')
                     ->label('رقم السند')
-                    ->searchable(),
+                    ->searchable()
+                    ->copyable(),
 
                 TextColumn::make('dueItem.tenancy.tenant.name')
                     ->label('المستأجر')
@@ -149,6 +151,11 @@ class RentPaymentResource extends Resource
                     })
                     ->badge(),
 
+                TextColumn::make('reference_number')
+                    ->label('المرجع')
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('paid_at')
                     ->label('تاريخ الدفع')
                     ->dateTime('Y-m-d H:i')
@@ -166,6 +173,16 @@ class RentPaymentResource extends Resource
                     ->options([
                         RentPayment::STATUS_POSTED => 'مرحّلة',
                         RentPayment::STATUS_VOIDED => 'ملغاة',
+                    ]),
+
+                SelectFilter::make('payment_method')
+                    ->label('طريقة الدفع')
+                    ->options([
+                        'cash' => 'نقدي',
+                        'bank_transfer' => 'تحويل بنكي',
+                        'mobile_wallet' => 'محفظة إلكترونية',
+                        'cheque' => 'شيك',
+                        'other' => 'أخرى',
                     ]),
             ])
             ->striped()
