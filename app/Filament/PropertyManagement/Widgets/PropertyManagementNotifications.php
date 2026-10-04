@@ -15,6 +15,8 @@ class PropertyManagementNotifications extends TableWidget
 
     protected static ?int $sort = 3;
 
+    protected ?string $pollingInterval = '10s';
+
     protected int|string|array $columnSpan = 'full';
 
     protected function getNotificationQuery(): Builder
