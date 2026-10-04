@@ -65,6 +65,8 @@ class PermissionForm
         'utility_meter_readings.manage',
         'property_documents.view',
         'property_documents.manage',
+        'property_management_reports.view',
+        'property_management_reports.export',
         'tasks.view',
         'tasks.manage',
         'banks.view',
