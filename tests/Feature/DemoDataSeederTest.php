@@ -50,5 +50,6 @@ class DemoDataSeederTest extends TestCase
         $this->assertSame(3, MaintenanceRequest::query()->where('reference_number', 'like', 'DEMO-MNT-%')->count());
         $this->assertSame(3, RentPayment::query()->where('receipt_number', 'like', 'DEMO-RCP-%')->count());
         $this->assertSame(3, Notification::query()->count());
+        $this->assertSame(3, OwnerSettlement::query()->count());
     }
 }
