@@ -50,14 +50,16 @@ class User extends Authenticatable implements FilamentUser
             return false;
         }
 
-        return $this->hasAnyRole([
-            'system_admin',
-            'customer_service',
-            'property_reviewer',
-            'property_management',
-            'accountant',
-            'financial_approver',
-        ]);
+        if ($this->hasRole('system_admin')) {
+            return true;
+        }
+
+        return match ($panel->getId()) {
+            'admin' => $this->can('panels.admin.access'),
+            'real-estate' => $this->can('panels.real_estate.access'),
+            'property-management' => $this->can('panels.property_management.access'),
+            default => false,
+        };
     }
 
     public function preferredCurrency(): BelongsTo
