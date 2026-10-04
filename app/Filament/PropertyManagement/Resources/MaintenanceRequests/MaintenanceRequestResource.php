@@ -7,6 +7,7 @@ use App\Filament\PropertyManagement\Resources\MaintenanceRequests\Pages\CreateMa
 use App\Filament\PropertyManagement\Resources\MaintenanceRequests\Pages\EditMaintenanceRequest;
 use App\Filament\PropertyManagement\Resources\MaintenanceRequests\Pages\ListMaintenanceRequests;
 use App\Models\MaintenanceRequest;
+use App\Services\AuditService;
 use App\Services\MaintenanceWorkflowService;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -277,12 +278,25 @@ class MaintenanceRequestResource extends Resource
                         ], true)
                         && (auth()->user()?->can('maintenance_requests.manage') ?? false))
                     ->action(function (MaintenanceRequest $record): void {
+                        $oldValues = $record->toArray();
+
                         $record->update([
                             'status' => MaintenanceRequest::STATUS_IN_PROGRESS,
                             'started_at' => $record->started_at ?? now(),
                         ]);
 
-                        app(MaintenanceWorkflowService::class)->syncTask($record->fresh());
+                        $record = $record->fresh();
+
+                        app(MaintenanceWorkflowService::class)->syncTask($record);
+
+                        app(AuditService::class)->forModel(
+                            action: 'maintenance.started',
+                            model: $record,
+                            oldValues: $oldValues,
+                            newValues: $record->toArray(),
+                            actor: auth()->user(),
+                            request: request(),
+                        );
                     }),
 
                 Action::make('complete')
@@ -297,12 +311,25 @@ class MaintenanceRequestResource extends Resource
                         ], true)
                         && (auth()->user()?->can('maintenance_requests.manage') ?? false))
                     ->action(function (MaintenanceRequest $record): void {
+                        $oldValues = $record->toArray();
+
                         $record->update([
                             'status' => MaintenanceRequest::STATUS_COMPLETED,
                             'completed_at' => now(),
                         ]);
 
-                        app(MaintenanceWorkflowService::class)->syncTask($record->fresh());
+                        $record = $record->fresh();
+
+                        app(MaintenanceWorkflowService::class)->syncTask($record);
+
+                        app(AuditService::class)->forModel(
+                            action: 'maintenance.completed',
+                            model: $record,
+                            oldValues: $oldValues,
+                            newValues: $record->toArray(),
+                            actor: auth()->user(),
+                            request: request(),
+                        );
                     }),
 
                 EditAction::make()->label('تعديل'),
