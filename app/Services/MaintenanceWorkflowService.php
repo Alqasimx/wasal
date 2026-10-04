@@ -52,18 +52,24 @@ class MaintenanceWorkflowService
             ? Task::STATUS_IN_PROGRESS
             : Task::STATUS_PENDING;
 
+        $dueAt = $request->scheduled_at ?? now()->addDay();
+
         $payload = [
             'title' => 'صيانة: '.$request->title,
             'description' => 'الطلب '.$request->reference_number
                 .' — العقار: '.($request->property?->internal_code ?? '—'),
             'assigned_to_user_id' => $assigneeId,
-            'due_at' => $request->scheduled_at ?? now()->addDay(),
+            'due_at' => $dueAt,
             'recurrence' => Task::RECURRENCE_ONCE,
             'status' => $taskStatus,
             'notify_before_minutes' => $request->serviceSchedule?->notify_before_minutes ?? 1440,
         ];
 
         if ($task) {
+            if ($task->due_at?->equalTo($dueAt) !== true) {
+                $payload['notified_at'] = null;
+            }
+
             $task->update($payload);
         } else {
             $task = Task::create($payload + [
