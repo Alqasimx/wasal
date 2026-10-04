@@ -2,7 +2,11 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\PropertyManagement\Widgets\MaintenanceOverview;
 use App\Filament\PropertyManagement\Widgets\OccupancyOverview;
+use App\Filament\PropertyManagement\Widgets\PropertyManagementQuickActions;
+use App\Filament\PropertyManagement\Widgets\RentArrearsWidget;
+use App\Filament\PropertyManagement\Widgets\UpcomingPropertyServices;
 use App\Filament\PropertyManagement\Widgets\PropertyManagementNotifications;
 use App\Filament\PropertyManagement\Widgets\PropertyManagementStatsOverview;
 use App\Filament\PropertyManagement\Widgets\PropertyManagementTasks;
@@ -82,10 +86,14 @@ class PropertyManagementPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
                 PanelSwitcher::class,
+                PropertyManagementQuickActions::class,
                 PropertyManagementStatsOverview::class,
                 OccupancyOverview::class,
                 PropertyManagementTasks::class,
                 PropertyManagementNotifications::class,
+                RentArrearsWidget::class,
+                MaintenanceOverview::class,
+                UpcomingPropertyServices::class,
             ])
             ->middleware([
                 EncryptCookies::class,
