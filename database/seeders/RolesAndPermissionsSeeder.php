@@ -205,6 +205,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'tenants.view',
                 'tenancies.view',
                 'rent_due_items.view',
+                'rent_due_items.manage',
                 'rent_payments.view',
                 'rent_payments.manage',
                 'property_expenses.view',
