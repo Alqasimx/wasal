@@ -37,7 +37,8 @@
         <button
             type="button"
             class="wasal-page-context__button wasal-page-context__button--back"
-            onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = @js($current['url']); }"
+            data-fallback="{{ $current['url'] }}"
+            onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = this.dataset.fallback; }"
         >
             ← الصفحة السابقة
         </button>
