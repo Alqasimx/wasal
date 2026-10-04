@@ -49,6 +49,7 @@ class TaskNotificationService
             'property_service_schedule' => ['service_due', 'خدمة عقار مجدولة'],
             'tenancy' => ['tenancy_due', 'متابعة عقد إيجار'],
             'property_management_agreement' => ['agreement_due', 'متابعة اتفاق إدارة'],
+            'property_inspection' => ['inspection_due', 'موعد معاينة عقار'],
             'property_expense' => ['expense_due', 'مراجعة مصروف عقار'],
             'owner_settlement' => ['owner_settlement_due', 'تسوية مالك'],
             'property_unit' => ['occupancy_due', 'متابعة إشغال وحدة'],
