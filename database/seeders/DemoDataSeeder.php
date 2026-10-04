@@ -290,12 +290,12 @@ class DemoDataSeeder extends Seeder
         foreach ($tenancyDefinitions as $i => [$unit, $tenant, $key, $rent, $start, $end]) {
             $tenancy = Tenancy::updateOrCreate(
                 [
+                    'contract_number' => $key,
+                ],
+                [
                     'property_unit_id' => $unit->id,
                     'tenant_id' => $tenant->id,
                     'starts_at' => $start->toDateString(),
-                ],
-                [
-                    'contract_number' => $key,
                     'ends_at' => $end->toDateString(),
                     'rent_amount' => $rent,
                     'currency_id' => $currency->id,
@@ -312,31 +312,49 @@ class DemoDataSeeder extends Seeder
             $unit->update(['status' => PropertyUnit::STATUS_OCCUPIED]);
             $tenancies->push($tenancy);
 
-            $pastDue = RentDueItem::updateOrCreate(
-                [
-                    'tenancy_id' => $tenancy->id,
-                    'due_date' => today()->subMonth()->startOfMonth()->toDateString(),
-                ],
-                [
-                    'amount' => $rent,
-                    'currency_id' => $currency->id,
-                    'status' => $i === 0 ? RentDueItem::STATUS_PAID : RentDueItem::STATUS_PARTIAL,
-                    'paid_amount' => $i === 0 ? $rent : (int) ($rent * 0.5),
-                ],
-            );
+            $pastDueDate = today()->subMonth()->startOfMonth()->toDateString();
 
-            RentDueItem::updateOrCreate(
-                [
+            $pastDue = RentDueItem::query()
+                ->where('tenancy_id', $tenancy->id)
+                ->whereDate('due_date', $pastDueDate)
+                ->first();
+
+            if (! $pastDue) {
+                $pastDue = new RentDueItem([
                     'tenancy_id' => $tenancy->id,
-                    'due_date' => today()->startOfMonth()->toDateString(),
-                ],
-                [
-                    'amount' => $rent,
-                    'currency_id' => $currency->id,
-                    'status' => RentDueItem::STATUS_DUE,
-                    'paid_amount' => 0,
-                ],
-            );
+                    'due_date' => $pastDueDate,
+                ]);
+            }
+
+            $pastDue->fill([
+                'amount' => $rent,
+                'currency_id' => $currency->id,
+                'status' => $i === 0 ? RentDueItem::STATUS_PAID : RentDueItem::STATUS_PARTIAL,
+                'paid_amount' => $i === 0 ? $rent : (int) ($rent * 0.5),
+            ]);
+            $pastDue->save();
+
+            $currentDueDate = today()->startOfMonth()->toDateString();
+
+            $currentDue = RentDueItem::query()
+                ->where('tenancy_id', $tenancy->id)
+                ->whereDate('due_date', $currentDueDate)
+                ->first();
+
+            if (! $currentDue) {
+                $currentDue = new RentDueItem([
+                    'tenancy_id' => $tenancy->id,
+                    'due_date' => $currentDueDate,
+                ]);
+            }
+
+            $currentDue->fill([
+                'amount' => $rent,
+                'currency_id' => $currency->id,
+                'status' => RentDueItem::STATUS_DUE,
+                'paid_amount' => 0,
+            ]);
+            $currentDue->save();
 
             RentPayment::updateOrCreate(
                 ['receipt_number' => 'DEMO-RCP-00'.($i + 1)],
