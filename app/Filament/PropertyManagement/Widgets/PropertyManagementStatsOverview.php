@@ -77,17 +77,25 @@ class PropertyManagementStatsOverview extends StatsOverviewWidget
         }
 
         if ($user?->can('rent_payments.view')) {
+            $monthlyCollections = RentPayment::query()
+                ->selectRaw('currency_id, SUM(amount) as total')
+                ->with('currency')
+                ->where('status', RentPayment::STATUS_POSTED)
+                ->whereBetween('paid_at', [
+                    now()->startOfMonth(),
+                    now()->endOfMonth(),
+                ])
+                ->groupBy('currency_id')
+                ->get()
+                ->map(fn (RentPayment $payment): string =>
+                    number_format((float) $payment->total, 2).' '.($payment->currency?->code ?? ''))
+                ->join(' • ');
+
             $stats[] = Stat::make(
                 'تحصيلات هذا الشهر',
-                number_format((float) RentPayment::query()
-                    ->where('status', RentPayment::STATUS_POSTED)
-                    ->whereBetween('paid_at', [
-                        now()->startOfMonth(),
-                        now()->endOfMonth(),
-                    ])
-                    ->sum('amount'), 2)
+                $monthlyCollections !== '' ? $monthlyCollections : '0'
             )
-                ->description('إجمالي الدفعات المرحلة هذا الشهر')
+                ->description('معروضة حسب كل عملة بدون جمع العملات المختلفة')
                 ->icon('heroicon-o-banknotes')
                 ->url(RentPaymentResource::getUrl('index', panel: 'property-management'));
         }
