@@ -10,15 +10,19 @@ class RentDueScheduleService
 {
     public function generateForTenancy(Tenancy $tenancy, ?Carbon $through = null): int
     {
-        if (
-            $tenancy->status !== Tenancy::STATUS_ACTIVE
-            || ! $tenancy->auto_generate_dues
-        ) {
+        if ($tenancy->status !== Tenancy::STATUS_ACTIVE) {
+            $this->cancelFutureDues($tenancy);
+
             return 0;
         }
 
-        $through ??= $tenancy->ends_at?->copy()
-            ?? now()->copy()->addYear();
+        if (! $tenancy->auto_generate_dues) {
+            $this->syncStatuses($tenancy);
+
+            return 0;
+        }
+
+        $through ??= $tenancy->ends_at?->copy() ?? now()->copy()->addYear();
 
         if ($tenancy->ends_at && $through->greaterThan($tenancy->ends_at)) {
             $through = $tenancy->ends_at->copy();
@@ -36,7 +40,7 @@ class RentDueScheduleService
                 [
                     'amount' => $tenancy->rent_amount,
                     'currency_id' => $tenancy->currency_id,
-                    'status' => $this->statusForDate($dueDate, $tenancy->grace_days),
+                    'status' => $this->statusForDate($dueDate, (int) $tenancy->grace_days),
                     'paid_amount' => 0,
                 ],
             );
@@ -102,6 +106,19 @@ class RentDueScheduleService
             });
 
         return $updated;
+    }
+
+    public function cancelFutureDues(Tenancy $tenancy): int
+    {
+        return RentDueItem::query()
+            ->where('tenancy_id', $tenancy->id)
+            ->whereDate('due_date', '>', today())
+            ->where('paid_amount', '<=', 0)
+            ->whereNotIn('status', [
+                RentDueItem::STATUS_PAID,
+                RentDueItem::STATUS_CANCELLED,
+            ])
+            ->update(['status' => RentDueItem::STATUS_CANCELLED]);
     }
 
     public function isOverdue(RentDueItem $item): bool
