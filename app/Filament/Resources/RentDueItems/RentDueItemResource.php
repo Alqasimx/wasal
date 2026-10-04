@@ -10,6 +10,7 @@ use App\Filament\Resources\RentDueItems\Schemas\RentDueItemForm;
 use App\Filament\Resources\RentDueItems\Tables\RentDueItemsTable;
 use App\Models\RentDueItem;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -29,6 +30,13 @@ class RentDueItemResource extends Resource
     protected static ?string $modelLabel = 'استحقاق إيجار';
     protected static ?string $pluralModelLabel = 'استحقاقات الإيجار';
     protected static string|UnitEnum|null $navigationGroup = 'إدارة الأملاك';
+
+    public static function getNavigationGroup(): string|UnitEnum|null
+    {
+        return Filament::getCurrentPanel()?->getId() === 'property-management'
+            ? 'الإيجارات والتحصيل'
+            : 'إدارة الأملاك';
+    }
 
     public static function form(Schema $schema): Schema
     {

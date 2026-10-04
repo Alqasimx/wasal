@@ -10,6 +10,7 @@ use App\Filament\Resources\Tenancies\Schemas\TenancyForm;
 use App\Filament\Resources\Tenancies\Tables\TenanciesTable;
 use App\Models\Tenancy;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -29,6 +30,13 @@ class TenancyResource extends Resource
     protected static ?string $modelLabel = 'عقد إيجار';
     protected static ?string $pluralModelLabel = 'عقود الإيجار';
     protected static string|UnitEnum|null $navigationGroup = 'إدارة الأملاك';
+
+    public static function getNavigationGroup(): string|UnitEnum|null
+    {
+        return Filament::getCurrentPanel()?->getId() === 'property-management'
+            ? 'الإيجارات والتحصيل'
+            : 'إدارة الأملاك';
+    }
 
     public static function form(Schema $schema): Schema
     {

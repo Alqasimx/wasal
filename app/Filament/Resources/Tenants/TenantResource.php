@@ -10,6 +10,7 @@ use App\Filament\Resources\Tenants\Schemas\TenantForm;
 use App\Filament\Resources\Tenants\Tables\TenantsTable;
 use App\Models\Tenant;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -29,6 +30,13 @@ class TenantResource extends Resource
     protected static ?string $modelLabel = 'مستأجر';
     protected static ?string $pluralModelLabel = 'المستأجرون';
     protected static string|UnitEnum|null $navigationGroup = 'إدارة الأملاك';
+
+    public static function getNavigationGroup(): string|UnitEnum|null
+    {
+        return Filament::getCurrentPanel()?->getId() === 'property-management'
+            ? 'الإيجارات والتحصيل'
+            : 'إدارة الأملاك';
+    }
 
     public static function form(Schema $schema): Schema
     {
