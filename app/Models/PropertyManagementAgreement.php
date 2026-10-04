@@ -94,6 +94,11 @@ class PropertyManagementAgreement extends Model
         return $this->hasMany(PropertyExpense::class);
     }
 
+    public function ownerSettlements(): HasMany
+    {
+        return $this->hasMany(OwnerSettlement::class);
+    }
+
     public function activeUnitsCount(): int
     {
         return $this->property
