@@ -2,7 +2,13 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\RealEstate\Widgets\RealEstateStatsOverview;
+use App\Filament\Resources\Cities\CityResource;
+use App\Filament\Resources\Countries\CountryResource;
 use App\Filament\Resources\Currencies\CurrencyResource;
+use App\Filament\Resources\Districts\DistrictResource;
+use App\Filament\Resources\Governorates\GovernorateResource;
+use App\Filament\Resources\Neighborhoods\NeighborhoodResource;
 use App\Filament\Resources\Properties\PropertyResource;
 use App\Filament\Resources\PropertyFeatures\PropertyFeatureResource;
 use App\Filament\Resources\PropertyListings\PropertyListingResource;
@@ -11,7 +17,6 @@ use App\Filament\Resources\PropertyRequests\PropertyRequestResource;
 use App\Filament\Resources\PropertyTypes\PropertyTypeResource;
 use App\Filament\Resources\PropertyUnits\PropertyUnitResource;
 use App\Filament\Resources\Tasks\TaskResource;
-use App\Filament\RealEstate\Widgets\RealEstateStatsOverview;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -55,6 +60,7 @@ class RealEstatePanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->navigationGroups([
                 NavigationGroup::make()->label('العقارات'),
+                NavigationGroup::make()->label('المواقع'),
                 NavigationGroup::make()->label('البيانات المرجعية'),
             ])
             ->resources([
@@ -63,9 +69,14 @@ class RealEstatePanelProvider extends PanelProvider
                 PropertyOwnerResource::class,
                 PropertyListingResource::class,
                 PropertyRequestResource::class,
+                TaskResource::class,
+                CountryResource::class,
+                GovernorateResource::class,
+                CityResource::class,
+                DistrictResource::class,
+                NeighborhoodResource::class,
                 PropertyTypeResource::class,
                 PropertyFeatureResource::class,
-                TaskResource::class,
                 CurrencyResource::class,
             ])
             ->pages([
