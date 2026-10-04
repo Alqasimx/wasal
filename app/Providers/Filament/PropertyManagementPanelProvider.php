@@ -2,9 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\PropertyManagement\Widgets\OccupancyOverview;
 use App\Filament\PropertyManagement\Widgets\PropertyManagementStatsOverview;
 use App\Filament\PropertyManagement\Widgets\PropertyManagementTasks;
-use App\Filament\Widgets\PanelSwitcher;
 use App\Filament\Resources\Currencies\CurrencyResource;
 use App\Filament\Resources\PropertyOwners\PropertyOwnerResource;
 use App\Filament\Resources\PropertyUnits\PropertyUnitResource;
@@ -12,6 +12,7 @@ use App\Filament\Resources\RentDueItems\RentDueItemResource;
 use App\Filament\Resources\Tasks\TaskResource;
 use App\Filament\Resources\Tenancies\TenancyResource;
 use App\Filament\Resources\Tenants\TenantResource;
+use App\Filament\Widgets\PanelSwitcher;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -81,6 +82,7 @@ class PropertyManagementPanelProvider extends PanelProvider
                 AccountWidget::class,
                 PanelSwitcher::class,
                 PropertyManagementStatsOverview::class,
+                OccupancyOverview::class,
                 PropertyManagementTasks::class,
             ])
             ->middleware([

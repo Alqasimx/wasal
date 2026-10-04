@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class PropertyUnitResource extends Resource
@@ -25,9 +26,9 @@ class PropertyUnitResource extends Resource
     protected static string $viewPermission = 'property_units.view';
     protected static string $managePermission = 'property_units.manage';
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice;
-    protected static ?string $navigationLabel = 'وحدات العقارات';
+    protected static ?string $navigationLabel = 'الوحدات والإشغال';
     protected static ?string $modelLabel = 'وحدة عقارية';
-    protected static ?string $pluralModelLabel = 'وحدات العقارات';
+    protected static ?string $pluralModelLabel = 'الوحدات والإشغال';
     protected static string|UnitEnum|null $navigationGroup = 'العقارات';
 
     public static function getNavigationGroup(): string|UnitEnum|null
@@ -35,6 +36,22 @@ class PropertyUnitResource extends Resource
         return Filament::getCurrentPanel()?->getId() === 'property-management'
             ? 'الأصول والإشغال'
             : 'العقارات';
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery()
+            ->with([
+                'property',
+                'currentTenancy.tenant',
+                'currentTenancy.currency',
+            ]);
+
+        if (Filament::getCurrentPanel()?->getId() === 'property-management') {
+            $query->currentlyManaged();
+        }
+
+        return $query;
     }
 
     public static function form(Schema $schema): Schema
