@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Tenancies\Pages;
 use App\Filament\Pages\AuditedCreateRecord;
 use App\Filament\Resources\Tenancies\TenancyResource;
 use App\Models\Tenancy;
+use App\Services\RentDueScheduleService;
 use App\Services\TenancyService;
 
 class CreateTenancy extends AuditedCreateRecord
@@ -22,5 +23,11 @@ class CreateTenancy extends AuditedCreateRecord
         }
 
         return $data;
+    }
+
+    protected function afterCreate(): void
+    {
+        app(RentDueScheduleService::class)
+            ->generateForTenancy($this->record->fresh());
     }
 }
