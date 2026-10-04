@@ -295,10 +295,16 @@ class DemoDataSeeder extends Seeder
                     'starts_at' => $start->toDateString(),
                 ],
                 [
+                    'contract_number' => $key,
                     'ends_at' => $end->toDateString(),
                     'rent_amount' => $rent,
                     'currency_id' => $currency->id,
                     'payment_frequency' => Tenancy::FREQUENCY_MONTHLY,
+                    'due_day' => 1,
+                    'grace_days' => 5,
+                    'security_deposit' => (int) ($rent * 0.5),
+                    'auto_generate_dues' => true,
+                    'notes' => 'عقد إيجار تجريبي لإظهار دورة التحصيل.',
                     'status' => Tenancy::STATUS_ACTIVE,
                 ],
             );
