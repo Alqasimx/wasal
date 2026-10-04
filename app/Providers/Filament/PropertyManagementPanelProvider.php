@@ -5,7 +5,6 @@ namespace App\Providers\Filament;
 use App\Filament\PropertyManagement\Widgets\PropertyManagementStatsOverview;
 use App\Filament\PropertyManagement\Widgets\PropertyManagementTasks;
 use App\Filament\Resources\Currencies\CurrencyResource;
-use App\Filament\Resources\Properties\PropertyResource;
 use App\Filament\Resources\PropertyOwners\PropertyOwnerResource;
 use App\Filament\Resources\PropertyUnits\PropertyUnitResource;
 use App\Filament\Resources\RentDueItems\RentDueItemResource;
@@ -62,7 +61,6 @@ class PropertyManagementPanelProvider extends PanelProvider
                 NavigationGroup::make()->label('التقارير والإعدادات'),
             ])
             ->resources([
-                PropertyResource::class,
                 PropertyUnitResource::class,
                 PropertyOwnerResource::class,
                 TenantResource::class,
@@ -78,10 +76,6 @@ class PropertyManagementPanelProvider extends PanelProvider
             ->pages([
                 Dashboard::class,
             ])
-            ->discoverWidgets(
-                in: app_path('Filament/PropertyManagement/Widgets'),
-                for: 'App\\Filament\\PropertyManagement\\Widgets',
-            )
             ->widgets([
                 AccountWidget::class,
                 PropertyManagementStatsOverview::class,
