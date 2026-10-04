@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Tenancies\Tables;
 
+use App\Models\RentDueItem;
 use App\Models\Tenancy;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -15,6 +16,12 @@ class TenanciesTable
         return $table
             ->defaultSort('starts_at', 'desc')
             ->columns([
+                TextColumn::make('contract_number')
+                    ->label('رقم العقد')
+                    ->searchable()
+                    ->copyable()
+                    ->placeholder('—'),
+
                 TextColumn::make('unit.property.internal_code')
                     ->label('العقار')
                     ->searchable()
@@ -38,6 +45,23 @@ class TenanciesTable
                     ->label('العملة')
                     ->placeholder('—'),
 
+                TextColumn::make('next_due')
+                    ->label('الاستحقاق القادم')
+                    ->state(fn (Tenancy $record) => $record->dueItems()
+                        ->whereNotIn('status', [
+                            RentDueItem::STATUS_PAID,
+                            RentDueItem::STATUS_CANCELLED,
+                        ])
+                        ->orderBy('due_date')
+                        ->value('due_date'))
+                    ->date('Y-m-d')
+                    ->placeholder('—'),
+
+                TextColumn::make('outstanding')
+                    ->label('الرصيد المستحق')
+                    ->state(fn (Tenancy $record): float => $record->outstandingBalance())
+                    ->numeric(),
+
                 TextColumn::make('payment_frequency')
                     ->label('الدورية')
                     ->formatStateUsing(fn (string $state): string => match ($state) {
@@ -58,17 +82,11 @@ class TenanciesTable
                     ->badge()
                     ->sortable(),
 
-                TextColumn::make('starts_at')
-                    ->label('البداية')
-                    ->date('Y-m-d')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
                 TextColumn::make('ends_at')
                     ->label('النهاية')
                     ->date('Y-m-d')
                     ->placeholder('مفتوح')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('status')
