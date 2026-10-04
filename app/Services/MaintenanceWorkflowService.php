@@ -60,7 +60,7 @@ class MaintenanceWorkflowService
             'due_at' => $request->scheduled_at ?? now()->addDay(),
             'recurrence' => Task::RECURRENCE_ONCE,
             'status' => $taskStatus,
-            'notify_before_minutes' => 1440,
+            'notify_before_minutes' => $request->serviceSchedule?->notify_before_minutes ?? 1440,
         ];
 
         if ($task) {
