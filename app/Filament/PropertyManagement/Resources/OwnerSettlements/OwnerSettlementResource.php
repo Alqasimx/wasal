@@ -29,7 +29,7 @@ class OwnerSettlementResource extends Resource
     protected static ?string $model = OwnerSettlement::class;
     protected static string $viewPermission = 'owner_settlements.view';
     protected static string $managePermission = 'owner_settlements.manage';
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentCurrencyDollar;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
     protected static ?string $navigationLabel = 'تسويات الملاك';
     protected static ?string $modelLabel = 'تسوية مالك';
     protected static ?string $pluralModelLabel = 'تسويات الملاك';
