@@ -51,6 +51,24 @@
                     إنشاء تسوية مالك
                 </a>
             @endif
+
+            @if ($user?->can('property_inspections.manage'))
+                <a href="{{ \App\Filament\PropertyManagement\Resources\PropertyInspections\PropertyInspectionResource::getUrl('create', panel: 'property-management') }}" class="wasal-panel-switcher__button">
+                    جدولة معاينة
+                </a>
+            @endif
+
+            @if ($user?->can('utility_meter_readings.manage'))
+                <a href="{{ \App\Filament\PropertyManagement\Resources\UtilityMeterReadings\UtilityMeterReadingResource::getUrl('create', panel: 'property-management') }}" class="wasal-panel-switcher__button">
+                    تسجيل قراءة عداد
+                </a>
+            @endif
+
+            @if ($user?->can('property_documents.manage'))
+                <a href="{{ \App\Filament\PropertyManagement\Resources\PropertyDocuments\PropertyDocumentResource::getUrl('create', panel: 'property-management') }}" class="wasal-panel-switcher__button">
+                    إضافة مستند
+                </a>
+            @endif
         </div>
     </div>
 </x-filament-widgets::widget>
