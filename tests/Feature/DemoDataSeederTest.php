@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\MaintenanceRequest;
+use App\Models\Notification;
 use App\Models\Property;
 use App\Models\PropertyListing;
 use App\Models\PropertyManagementAgreement;
@@ -34,6 +35,7 @@ class DemoDataSeederTest extends TestCase
         $this->assertSame(3, PropertyVendor::query()->where('email', 'like', '%@demo.local')->count());
         $this->assertSame(3, MaintenanceRequest::query()->where('reference_number', 'like', 'DEMO-MNT-%')->count());
         $this->assertSame(3, RentPayment::query()->where('receipt_number', 'like', 'DEMO-RCP-%')->count());
+        $this->assertSame(3, Notification::query()->count());
     }
 
     public function test_demo_seeder_can_be_run_twice_without_duplicate_demo_records(): void
@@ -45,5 +47,6 @@ class DemoDataSeederTest extends TestCase
         $this->assertSame(3, Tenant::query()->where('identity_number', 'like', 'DEMO-T-%')->count());
         $this->assertSame(3, MaintenanceRequest::query()->where('reference_number', 'like', 'DEMO-MNT-%')->count());
         $this->assertSame(3, RentPayment::query()->where('receipt_number', 'like', 'DEMO-RCP-%')->count());
+        $this->assertSame(3, Notification::query()->count());
     }
 }
