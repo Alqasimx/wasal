@@ -39,6 +39,18 @@
                     إضافة فني / مورد
                 </a>
             @endif
+
+            @if ($user?->can('property_expenses.manage'))
+                <a href="{{ \App\Filament\PropertyManagement\Resources\PropertyExpenses\PropertyExpenseResource::getUrl('create', panel: 'property-management') }}" class="wasal-panel-switcher__button">
+                    إضافة مصروف
+                </a>
+            @endif
+
+            @if ($user?->can('owner_settlements.manage'))
+                <a href="{{ \App\Filament\PropertyManagement\Resources\OwnerSettlements\OwnerSettlementResource::getUrl('create', panel: 'property-management') }}" class="wasal-panel-switcher__button">
+                    إنشاء تسوية مالك
+                </a>
+            @endif
         </div>
     </div>
 </x-filament-widgets::widget>
