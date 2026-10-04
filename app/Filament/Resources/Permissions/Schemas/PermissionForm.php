@@ -55,6 +55,8 @@ class PermissionForm
         'maintenance_requests.manage',
         'property_expenses.view',
         'property_expenses.manage',
+        'owner_settlements.view',
+        'owner_settlements.manage',
         'tasks.view',
         'tasks.manage',
         'banks.view',
