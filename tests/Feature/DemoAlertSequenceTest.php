@@ -27,6 +27,10 @@ class DemoAlertSequenceTest extends TestCase
 
         Notification::query()->delete();
 
+        Task::query()->update([
+            'notified_at' => now(),
+        ]);
+
         $this->artisan('wasal:seed-demo-alert-sequence', [
             '--email' => $user->email,
         ])->assertSuccessful();
