@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\PropertyManagement\Widgets\AdvancedOperationsOverview;
 use App\Filament\PropertyManagement\Widgets\MaintenanceOverview;
 use App\Filament\PropertyManagement\Widgets\OwnerFinanceOverview;
 use App\Filament\PropertyManagement\Widgets\OccupancyOverview;
@@ -101,6 +102,7 @@ class PropertyManagementPanelProvider extends PanelProvider
                 MaintenanceOverview::class,
                 UpcomingPropertyServices::class,
                 OwnerFinanceOverview::class,
+                AdvancedOperationsOverview::class,
             ])
             ->middleware([
                 EncryptCookies::class,
