@@ -14,6 +14,7 @@ use App\Filament\Resources\Permissions\PermissionResource;
 use App\Filament\Resources\Roles\RoleResource;
 use App\Filament\Resources\Settings\SettingResource;
 use App\Filament\Resources\Users\UserResource;
+use App\Filament\Widgets\PanelSwitcher;
 use App\Filament\Widgets\RecentAuditLogs;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -83,6 +84,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->widgets([
                 AccountWidget::class,
+                PanelSwitcher::class,
                 RecentAuditLogs::class,
             ])
             ->middleware([

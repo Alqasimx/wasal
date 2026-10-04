@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\PropertyManagement\Widgets\PropertyManagementStatsOverview;
 use App\Filament\PropertyManagement\Widgets\PropertyManagementTasks;
+use App\Filament\Widgets\PanelSwitcher;
 use App\Filament\Resources\Currencies\CurrencyResource;
 use App\Filament\Resources\PropertyOwners\PropertyOwnerResource;
 use App\Filament\Resources\PropertyUnits\PropertyUnitResource;
@@ -78,6 +79,7 @@ class PropertyManagementPanelProvider extends PanelProvider
             ])
             ->widgets([
                 AccountWidget::class,
+                PanelSwitcher::class,
                 PropertyManagementStatsOverview::class,
                 PropertyManagementTasks::class,
             ])

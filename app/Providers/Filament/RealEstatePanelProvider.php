@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\RealEstate\Widgets\RealEstateStatsOverview;
+use App\Filament\Widgets\PanelSwitcher;
 use App\Filament\Resources\Cities\CityResource;
 use App\Filament\Resources\Countries\CountryResource;
 use App\Filament\Resources\Currencies\CurrencyResource;
@@ -84,6 +85,7 @@ class RealEstatePanelProvider extends PanelProvider
             ])
             ->widgets([
                 AccountWidget::class,
+                PanelSwitcher::class,
                 RealEstateStatsOverview::class,
             ])
             ->middleware([

@@ -11,12 +11,15 @@ use App\Models\PropertyService;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -39,10 +42,18 @@ class PropertyManagementAgreementResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
+            TextInput::make('agreement_number')
+                ->label('رقم اتفاق الإدارة')
+                ->disabled()
+                ->dehydrated(false)
+                ->placeholder('يُنشأ تلقائيًا عند الحفظ'),
+
             Select::make('property_id')
                 ->label('العقار')
                 ->relationship('property', 'internal_code')
-                ->getOptionLabelFromRecordUsing(fn ($record): string => $record->internal_code.' — '.$record->title_ar)
+                ->getOptionLabelFromRecordUsing(
+                    fn ($record): string => $record->internal_code.' — '.$record->title_ar
+                )
                 ->searchable(['internal_code', 'title_ar'])
                 ->preload()
                 ->required(),
@@ -50,8 +61,10 @@ class PropertyManagementAgreementResource extends Resource
             Select::make('property_owner_id')
                 ->label('المالك')
                 ->relationship('propertyOwner', 'id')
-                ->getOptionLabelFromRecordUsing(fn ($record): string => $record->external_owner_name
-                    ?: ($record->user?->name ?? 'مالك #'.$record->id))
+                ->getOptionLabelFromRecordUsing(
+                    fn ($record): string => $record->external_owner_name
+                        ?: ($record->user?->name ?? 'مالك #'.$record->id)
+                )
                 ->searchable()
                 ->preload(),
 
@@ -66,7 +79,8 @@ class PropertyManagementAgreementResource extends Resource
                 ->required(),
 
             DatePicker::make('ends_at')
-                ->label('نهاية الإدارة'),
+                ->label('نهاية الإدارة')
+                ->afterOrEqual('starts_at'),
 
             Select::make('status')
                 ->label('الحالة')
@@ -93,11 +107,33 @@ class PropertyManagementAgreementResource extends Resource
                 ->minValue(0)
                 ->required(),
 
+            Select::make('fee_billing_frequency')
+                ->label('دورية احتساب رسوم الإدارة')
+                ->options([
+                    PropertyManagementAgreement::BILLING_MONTHLY => 'شهري',
+                    PropertyManagementAgreement::BILLING_QUARTERLY => 'ربع سنوي',
+                    PropertyManagementAgreement::BILLING_SEMIANNUAL => 'نصف سنوي',
+                    PropertyManagementAgreement::BILLING_ANNUAL => 'سنوي',
+                ])
+                ->default(PropertyManagementAgreement::BILLING_MONTHLY)
+                ->required(),
+
             Select::make('currency_id')
                 ->label('عملة الرسوم الثابتة')
                 ->relationship('currency', 'name_ar')
                 ->searchable()
                 ->preload(),
+
+            Toggle::make('auto_renew')
+                ->label('تجديد الاتفاق تلقائيًا')
+                ->default(false),
+
+            TextInput::make('renewal_notice_days')
+                ->label('التنبيه قبل نهاية الاتفاق بالأيام')
+                ->numeric()
+                ->minValue(0)
+                ->default(30)
+                ->required(),
 
             Select::make('included_services')
                 ->label('الخدمات المشمولة')
@@ -110,6 +146,13 @@ class PropertyManagementAgreementResource extends Resource
                 ->searchable()
                 ->preload(),
 
+            FileUpload::make('agreement_document_path')
+                ->label('نسخة اتفاق الإدارة')
+                ->disk('public')
+                ->directory('property-management/agreements')
+                ->downloadable()
+                ->openable(),
+
             Textarea::make('notes')
                 ->label('ملاحظات الاتفاق')
                 ->rows(4),
@@ -121,6 +164,12 @@ class PropertyManagementAgreementResource extends Resource
         return $table
             ->defaultSort('starts_at', 'desc')
             ->columns([
+                TextColumn::make('agreement_number')
+                    ->label('رقم الاتفاق')
+                    ->searchable()
+                    ->copyable()
+                    ->placeholder('—'),
+
                 TextColumn::make('property.internal_code')
                     ->label('رمز العقار')
                     ->searchable()
@@ -136,6 +185,16 @@ class PropertyManagementAgreementResource extends Resource
                     ->state(fn (PropertyManagementAgreement $record): string =>
                         $record->propertyOwner?->external_owner_name
                         ?: ($record->propertyOwner?->user?->name ?? '—')),
+
+                TextColumn::make('occupancy')
+                    ->label('الإشغال')
+                    ->state(function (PropertyManagementAgreement $record): string {
+                        $total = $record->unitsCount();
+                        $occupied = $record->activeUnitsCount();
+
+                        return $occupied.'/'.$total.' ('.$record->occupancyPercentage().'%)';
+                    })
+                    ->badge(),
 
                 TextColumn::make('manager.name')
                     ->label('المسؤول')
@@ -158,6 +217,17 @@ class PropertyManagementAgreementResource extends Resource
                             ? $state.'%'
                             : number_format((float) $state, 2).' '.($record->currency?->code ?? '')),
 
+                TextColumn::make('services_count')
+                    ->label('الخدمات')
+                    ->state(fn (PropertyManagementAgreement $record): int =>
+                        count($record->included_services ?? []))
+                    ->badge(),
+
+                IconColumn::make('auto_renew')
+                    ->label('تجديد تلقائي')
+                    ->boolean()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('starts_at')
                     ->label('البداية')
                     ->date('Y-m-d')
@@ -177,11 +247,17 @@ class PropertyManagementAgreementResource extends Resource
                         PropertyManagementAgreement::STATUS_PAUSED => 'موقوف مؤقتًا',
                         PropertyManagementAgreement::STATUS_ENDED => 'منتهي',
                     ]),
+
+                SelectFilter::make('assigned_manager_user_id')
+                    ->label('مسؤول الإدارة')
+                    ->relationship('manager', 'name')
+                    ->searchable()
+                    ->preload(),
             ])
             ->striped()
             ->defaultPaginationPageOption(10)
             ->recordActions([
-                EditAction::make()->label('تعديل'),
+                EditAction::make()->label('تعديل الاتفاق'),
             ]);
     }
 
