@@ -7,7 +7,9 @@ use App\Filament\PropertyManagement\Resources\MaintenanceRequests\Pages\CreateMa
 use App\Filament\PropertyManagement\Resources\MaintenanceRequests\Pages\EditMaintenanceRequest;
 use App\Filament\PropertyManagement\Resources\MaintenanceRequests\Pages\ListMaintenanceRequests;
 use App\Models\MaintenanceRequest;
+use App\Services\MaintenanceWorkflowService;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
@@ -263,6 +265,46 @@ class MaintenanceRequestResource extends Resource
             ->striped()
             ->defaultPaginationPageOption(10)
             ->recordActions([
+                Action::make('start')
+                    ->label('بدء التنفيذ')
+                    ->icon('heroicon-o-play')
+                    ->color('warning')
+                    ->visible(fn (MaintenanceRequest $record): bool =>
+                        in_array($record->status, [
+                            MaintenanceRequest::STATUS_OPEN,
+                            MaintenanceRequest::STATUS_SCHEDULED,
+                            MaintenanceRequest::STATUS_ON_HOLD,
+                        ], true)
+                        && (auth()->user()?->can('maintenance_requests.manage') ?? false))
+                    ->action(function (MaintenanceRequest $record): void {
+                        $record->update([
+                            'status' => MaintenanceRequest::STATUS_IN_PROGRESS,
+                            'started_at' => $record->started_at ?? now(),
+                        ]);
+
+                        app(MaintenanceWorkflowService::class)->syncTask($record->fresh());
+                    }),
+
+                Action::make('complete')
+                    ->label('إكمال')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->visible(fn (MaintenanceRequest $record): bool =>
+                        ! in_array($record->status, [
+                            MaintenanceRequest::STATUS_COMPLETED,
+                            MaintenanceRequest::STATUS_CANCELLED,
+                        ], true)
+                        && (auth()->user()?->can('maintenance_requests.manage') ?? false))
+                    ->action(function (MaintenanceRequest $record): void {
+                        $record->update([
+                            'status' => MaintenanceRequest::STATUS_COMPLETED,
+                            'completed_at' => now(),
+                        ]);
+
+                        app(MaintenanceWorkflowService::class)->syncTask($record->fresh());
+                    }),
+
                 EditAction::make()->label('تعديل'),
             ]);
     }
