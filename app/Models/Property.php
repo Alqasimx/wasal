@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -53,45 +52,18 @@ class Property extends Model
         ];
     }
 
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by_user_id');
-    }
-
-    public function propertyType(): BelongsTo
-    {
-        return $this->belongsTo(PropertyType::class);
-    }
-
-    public function city(): BelongsTo
-    {
-        return $this->belongsTo(City::class);
-    }
-
-    public function district(): BelongsTo
-    {
-        return $this->belongsTo(District::class);
-    }
-
-    public function neighborhood(): BelongsTo
-    {
-        return $this->belongsTo(Neighborhood::class);
-    }
-
-    public function listings(): HasMany
-    {
-        return $this->hasMany(PropertyListing::class);
-    }
-
-    public function owners(): HasMany
-    {
-        return $this->hasMany(PropertyOwner::class);
-    }
-
-    public function units(): HasMany
-    {
-        return $this->hasMany(PropertyUnit::class);
-    }
+    public function creator(): BelongsTo { return $this->belongsTo(User::class, 'created_by_user_id'); }
+    public function propertyType(): BelongsTo { return $this->belongsTo(PropertyType::class); }
+    public function city(): BelongsTo { return $this->belongsTo(City::class); }
+    public function district(): BelongsTo { return $this->belongsTo(District::class); }
+    public function neighborhood(): BelongsTo { return $this->belongsTo(Neighborhood::class); }
+    public function listings(): HasMany { return $this->hasMany(PropertyListing::class); }
+    public function owners(): HasMany { return $this->hasMany(PropertyOwner::class); }
+    public function units(): HasMany { return $this->hasMany(PropertyUnit::class); }
+    public function managementAgreements(): HasMany { return $this->hasMany(PropertyManagementAgreement::class); }
+    public function serviceSchedules(): HasMany { return $this->hasMany(PropertyServiceSchedule::class); }
+    public function maintenanceRequests(): HasMany { return $this->hasMany(MaintenanceRequest::class); }
+    public function expenses(): HasMany { return $this->hasMany(PropertyExpense::class); }
 
     public function attributeValues(): \Illuminate\Database\Eloquent\Relations\MorphMany
     {
