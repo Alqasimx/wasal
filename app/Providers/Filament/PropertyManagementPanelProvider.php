@@ -50,6 +50,10 @@ class PropertyManagementPanelProvider extends PanelProvider
                 PanelsRenderHook::HEAD_END,
                 fn (): \Illuminate\Contracts\View\View => view('filament.admin.styles'),
             )
+            ->renderHook(
+                PanelsRenderHook::PAGE_START,
+                fn (): \Illuminate\Contracts\View\View => view('filament.components.panel-context-bar'),
+            )
             ->colors([
                 'primary' => Color::hex('#D4AF37'),
                 'gray' => Color::Zinc,
