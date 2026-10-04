@@ -84,6 +84,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'property_expenses.view',
             'property_expenses.manage',
 
+            'owner_settlements.view',
+            'owner_settlements.manage',
+
             'tasks.view',
             'tasks.manage',
 
@@ -191,6 +194,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'maintenance_requests.manage',
                 'property_expenses.view',
                 'property_expenses.manage',
+                'owner_settlements.view',
+                'owner_settlements.manage',
                 'tasks.view',
                 'tasks.manage',
             ]);
@@ -210,6 +215,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'rent_payments.manage',
                 'property_expenses.view',
                 'property_expenses.manage',
+                'owner_settlements.view',
+                'owner_settlements.manage',
                 'audit_logs.financial_view',
             ]);
 
@@ -227,6 +234,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'rent_due_items.view',
                 'rent_payments.view',
                 'property_expenses.view',
+                'owner_settlements.view',
+                'owner_settlements.manage',
                 'audit_logs.financial_view',
             ]);
 
