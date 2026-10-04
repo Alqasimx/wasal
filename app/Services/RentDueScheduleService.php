@@ -41,7 +41,9 @@ class RentDueScheduleService
             );
         }
 
-        if ($dates !== []) {
+        if ($dates === []) {
+            $this->cancelFutureDues($tenancy);
+        } else {
             RentDueItem::query()
                 ->where('tenancy_id', $tenancy->id)
                 ->whereDate('due_date', '>=', today())
