@@ -5,6 +5,7 @@ namespace App\Filament\PropertyManagement\Resources\PropertyDocuments\Pages;
 use App\Filament\Pages\AuditedCreateRecord;
 use App\Filament\PropertyManagement\Resources\PropertyDocuments\PropertyDocumentResource;
 use App\Models\PropertyDocument;
+use Illuminate\Support\Carbon;
 
 class CreatePropertyDocument extends AuditedCreateRecord
 {
@@ -17,7 +18,7 @@ class CreatePropertyDocument extends AuditedCreateRecord
         if (
             ($data['status'] ?? PropertyDocument::STATUS_ACTIVE) !== PropertyDocument::STATUS_ARCHIVED
             && ! empty($data['expires_at'])
-            && now()->startOfDay()->gt($data['expires_at'])
+            && today()->gt(Carbon::parse($data['expires_at']))
         ) {
             $data['status'] = PropertyDocument::STATUS_EXPIRED;
         }
