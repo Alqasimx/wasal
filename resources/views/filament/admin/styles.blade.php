@@ -507,4 +507,100 @@
             grid-template-columns: 1fr;
         }
     }
+    .wasal-page-context {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .9rem;
+        margin-bottom: 1rem;
+        padding: .85rem 1rem;
+        border: 1px solid var(--wasal-border);
+        border-radius: 16px;
+        background: linear-gradient(145deg, var(--wasal-card), var(--wasal-gold-faint));
+        box-shadow: var(--wasal-shadow-soft);
+    }
+
+    .wasal-page-context__identity {
+        display: grid;
+        gap: .12rem;
+        min-width: 9rem;
+    }
+
+    .wasal-page-context__identity span {
+        color: var(--wasal-muted);
+        font-size: .75rem;
+        font-weight: 700;
+    }
+
+    .wasal-page-context__identity strong {
+        color: var(--wasal-ink);
+        font-size: 1rem;
+        font-weight: 850;
+    }
+
+    .wasal-page-context__actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .45rem;
+    }
+
+    .wasal-page-context__button,
+    .wasal-page-context__panel {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 2.35rem;
+        padding: .52rem .78rem;
+        border: 1px solid var(--wasal-border);
+        border-radius: 10px;
+        background: var(--wasal-card);
+        color: var(--wasal-ink);
+        font-size: .8rem;
+        font-weight: 800;
+        text-decoration: none;
+        cursor: pointer;
+        transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .wasal-page-context__button:hover,
+    .wasal-page-context__panel:hover {
+        transform: translateY(-1px);
+        border-color: rgba(212, 175, 55, .72);
+        box-shadow: 0 5px 14px rgba(181, 139, 22, .10);
+    }
+
+    .wasal-page-context__button--back {
+        background: transparent;
+    }
+
+    .wasal-page-context__button--home {
+        border-color: rgba(212, 175, 55, .55);
+    }
+
+    .wasal-page-context__panel--active {
+        border-color: #cda92f;
+        background: linear-gradient(135deg, #e4c75d, #d4af37);
+        color: #17130a;
+        box-shadow: 0 6px 16px rgba(181, 139, 22, .12);
+    }
+
+    @media (max-width: 900px) {
+        .wasal-page-context {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .wasal-page-context__actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 560px) {
+        .wasal-page-context__actions {
+            grid-template-columns: 1fr;
+        }
+    }
+
 </style>
