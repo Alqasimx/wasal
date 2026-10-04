@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\MaintenanceRequest;
 use App\Models\PropertyService;
 use App\Models\PropertyServiceSchedule;
-use App\Models\Task;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 
@@ -16,7 +16,7 @@ class PropertyServiceScheduleService
         $count = 0;
 
         PropertyServiceSchedule::query()
-            ->with(['service', 'property', 'unit'])
+            ->with(['service', 'property', 'unit', 'vendor'])
             ->where('is_active', true)
             ->whereNotNull('next_due_at')
             ->where('next_due_at', '<=', $now->copy()->addDay())
@@ -29,21 +29,39 @@ class PropertyServiceScheduleService
                         ->where('status', 'active')
                         ->value('id');
 
-                if ($schedule->service?->creates_task && $assigneeId) {
-                    Task::create([
-                        'title' => 'خدمة مجدولة: '.$schedule->service->name_ar,
-                        'description' => 'العقار: '.$schedule->property->internal_code
-                            .($schedule->unit ? ' — الوحدة: '.$schedule->unit->code : ''),
-                        'related_type' => 'property_service_schedule',
-                        'related_id' => $schedule->id,
+                if (! $assigneeId) {
+                    return;
+                }
+
+                $request = MaintenanceRequest::firstOrCreate(
+                    [
+                        'property_service_schedule_id' => $schedule->id,
+                        'scheduled_at' => $dueAt,
+                    ],
+                    [
+                        'property_id' => $schedule->property_id,
+                        'property_unit_id' => $schedule->property_unit_id,
+                        'property_service_id' => $schedule->property_service_id,
+                        'property_vendor_id' => $schedule->property_vendor_id,
                         'assigned_to_user_id' => $assigneeId,
                         'created_by_user_id' => $assigneeId,
-                        'due_at' => $dueAt,
-                        'recurrence' => Task::RECURRENCE_ONCE,
-                        'status' => Task::STATUS_PENDING,
-                        'notify_before_minutes' => $schedule->notify_before_minutes,
-                    ]);
+                        'title' => $schedule->service->name_ar,
+                        'description' => 'خدمة دورية تم إنشاؤها تلقائيًا من جدول الخدمات.',
+                        'priority' => MaintenanceRequest::PRIORITY_NORMAL,
+                        'status' => MaintenanceRequest::STATUS_SCHEDULED,
+                        'estimated_cost' => $schedule->estimated_cost,
+                        'currency_id' => $schedule->currency_id,
+                        'cost_bearer' => MaintenanceRequest::COST_OWNER,
+                        'is_paid' => false,
+                        'notes' => 'مولد تلقائيًا من جدول الخدمة #'.$schedule->id,
+                    ],
+                );
 
+                if ($schedule->service?->creates_task) {
+                    app(MaintenanceWorkflowService::class)->syncTask($request);
+                }
+
+                if ($request->wasRecentlyCreated) {
                     $count++;
                 }
 
