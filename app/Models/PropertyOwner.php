@@ -31,4 +31,5 @@ class PropertyOwner extends Model
     public function property(): BelongsTo { return $this->belongsTo(Property::class); }
     public function user(): BelongsTo { return $this->belongsTo(User::class); }
     public function managementAgreements(): HasMany { return $this->hasMany(PropertyManagementAgreement::class); }
+    public function settlements(): HasMany { return $this->hasMany(OwnerSettlement::class, 'property_owner_id'); }
 }
