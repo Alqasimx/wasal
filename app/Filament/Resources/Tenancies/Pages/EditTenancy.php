@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Tenancies\Pages;
 use App\Filament\Pages\AuditedEditRecord;
 use App\Filament\Resources\Tenancies\TenancyResource;
 use App\Models\Tenancy;
+use App\Services\RentDueScheduleService;
 use App\Services\TenancyService;
 
 class EditTenancy extends AuditedEditRecord
@@ -23,5 +24,11 @@ class EditTenancy extends AuditedEditRecord
         }
 
         return $data;
+    }
+
+    protected function afterSave(): void
+    {
+        app(RentDueScheduleService::class)
+            ->generateForTenancy($this->record->fresh());
     }
 }
