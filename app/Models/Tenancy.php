@@ -37,23 +37,9 @@ class Tenancy extends Model
         ];
     }
 
-    public function unit(): BelongsTo
-    {
-        return $this->belongsTo(PropertyUnit::class, 'property_unit_id');
-    }
-
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class);
-    }
-
-    public function currency(): BelongsTo
-    {
-        return $this->belongsTo(Currency::class);
-    }
-
-    public function dueItems(): HasMany
-    {
-        return $this->hasMany(RentDueItem::class);
-    }
+    public function unit(): BelongsTo { return $this->belongsTo(PropertyUnit::class, 'property_unit_id'); }
+    public function tenant(): BelongsTo { return $this->belongsTo(Tenant::class); }
+    public function currency(): BelongsTo { return $this->belongsTo(Currency::class); }
+    public function dueItems(): HasMany { return $this->hasMany(RentDueItem::class); }
+    public function payments(): HasMany { return $this->hasMany(RentPayment::class); }
 }
