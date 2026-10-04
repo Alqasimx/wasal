@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             GeographySeeder::class,
             CurrencySeeder::class,
             PropertyMetadataSeeder::class,
+            PropertyManagementServiceCatalogSeeder::class,
         ]);
     }
 }
