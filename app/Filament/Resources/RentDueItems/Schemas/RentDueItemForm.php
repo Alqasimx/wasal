@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\RentDueItems\Schemas;
 
-use App\Models\RentDueItem;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -20,8 +19,9 @@ class RentDueItemForm
                     $tenant = $record->tenant?->name ?? 'مستأجر';
                     $property = $record->unit?->property?->internal_code ?? 'عقار';
                     $unit = $record->unit?->code ?? 'وحدة';
+                    $contract = $record->contract_number ?: '#'.$record->id;
 
-                    return '#'.$record->id.' — '.$tenant.' — '.$property.' / '.$unit;
+                    return $contract.' — '.$tenant.' — '.$property.' / '.$unit;
                 })
                 ->searchable()
                 ->preload()
@@ -34,7 +34,7 @@ class RentDueItemForm
             TextInput::make('amount')
                 ->label('المبلغ المستحق')
                 ->numeric()
-                ->minValue(0)
+                ->minValue(0.01)
                 ->required(),
 
             Select::make('currency_id')
@@ -46,22 +46,15 @@ class RentDueItemForm
 
             TextInput::make('paid_amount')
                 ->label('المبلغ المسدد')
-                ->numeric()
-                ->minValue(0)
-                ->default(0)
-                ->required(),
+                ->disabled()
+                ->dehydrated(false)
+                ->helperText('يُحتسب تلقائيًا من التحصيلات المسجلة.'),
 
-            Select::make('status')
+            TextInput::make('status')
                 ->label('الحالة')
-                ->options([
-                    RentDueItem::STATUS_DUE => 'مستحق',
-                    RentDueItem::STATUS_PARTIAL => 'مسدد جزئيًا',
-                    RentDueItem::STATUS_PAID => 'مسدد',
-                    RentDueItem::STATUS_OVERDUE => 'متأخر',
-                    RentDueItem::STATUS_CANCELLED => 'ملغي',
-                ])
-                ->default(RentDueItem::STATUS_DUE)
-                ->required(),
+                ->disabled()
+                ->dehydrated(false)
+                ->helperText('تتحدث تلقائيًا حسب تاريخ الاستحقاق والتحصيلات.'),
         ]);
     }
 }
