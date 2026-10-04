@@ -14,8 +14,15 @@ class RentPaymentService
     {
         return DB::transaction(function () use ($data, $actor): RentPayment {
             $dueItem = RentDueItem::query()
+                ->with('tenancy')
                 ->lockForUpdate()
                 ->findOrFail($data['rent_due_item_id']);
+
+            if ($dueItem->status === RentDueItem::STATUS_CANCELLED) {
+                throw ValidationException::withMessages([
+                    'rent_due_item_id' => 'لا يمكن تسجيل دفعة على استحقاق ملغي.',
+                ]);
+            }
 
             $amount = (float) $data['amount'];
             $remaining = max(0, (float) $dueItem->amount - (float) $dueItem->paid_amount);
@@ -23,6 +30,12 @@ class RentPaymentService
             if ($amount <= 0) {
                 throw ValidationException::withMessages([
                     'amount' => 'يجب أن يكون مبلغ التحصيل أكبر من صفر.',
+                ]);
+            }
+
+            if ($remaining <= 0) {
+                throw ValidationException::withMessages([
+                    'rent_due_item_id' => 'هذا الاستحقاق مسدد بالكامل.',
                 ]);
             }
 
@@ -80,6 +93,7 @@ class RentPaymentService
             ]);
 
             $dueItem = RentDueItem::query()
+                ->with('tenancy')
                 ->lockForUpdate()
                 ->findOrFail($payment->rent_due_item_id);
 
@@ -108,7 +122,7 @@ class RentPaymentService
         $status = match (true) {
             $paid >= $amount => RentDueItem::STATUS_PAID,
             $paid > 0 => RentDueItem::STATUS_PARTIAL,
-            $dueItem->due_date->isPast() => RentDueItem::STATUS_OVERDUE,
+            app(RentDueScheduleService::class)->isOverdue($dueItem) => RentDueItem::STATUS_OVERDUE,
             default => RentDueItem::STATUS_DUE,
         };
 
