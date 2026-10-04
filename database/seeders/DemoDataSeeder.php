@@ -7,6 +7,7 @@ use App\Models\City;
 use App\Models\Currency;
 use App\Models\MaintenanceRequest;
 use App\Models\Notification;
+use App\Services\OwnerSettlementService;
 use App\Models\Property;
 use App\Models\PropertyExpense;
 use App\Models\PropertyListing;
@@ -568,6 +569,20 @@ class DemoDataSeeder extends Seeder
                     'notify_before_minutes' => 1440,
                     'notified_at' => null,
                 ],
+            );
+        }
+
+        foreach (PropertyManagementAgreement::query()
+            ->where('agreement_number', 'like', 'DEMO-PMA-%')
+            ->orderBy('agreement_number')
+            ->get() as $agreement) {
+            app(OwnerSettlementService::class)->generate(
+                agreement: $agreement,
+                periodStart: today()->subMonth()->startOfMonth(),
+                periodEnd: today(),
+                currencyId: $currency->id,
+                actor: $staff,
+                notes: 'تسوية تجريبية للملاك.',
             );
         }
 
