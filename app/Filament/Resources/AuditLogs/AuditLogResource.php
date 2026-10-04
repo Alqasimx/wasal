@@ -9,7 +9,9 @@ use App\Filament\Resources\AuditLogs\Tables\AuditLogsTable;
 use App\Models\AuditLog;
 use App\Models\Bank;
 use App\Models\Currency;
+use App\Models\PropertyExpense;
 use App\Models\RentDueItem;
+use App\Models\RentPayment;
 use App\Models\Tenancy;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -76,7 +78,6 @@ class AuditLogResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
-
         $user = auth()->user();
 
         if (! $user) {
@@ -167,6 +168,8 @@ class AuditLogResource extends Resource
             Currency::class,
             Tenancy::class,
             RentDueItem::class,
+            RentPayment::class,
+            PropertyExpense::class,
         ];
     }
 }
