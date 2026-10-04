@@ -9,6 +9,7 @@ use App\Filament\Resources\AuditLogs\Tables\AuditLogsTable;
 use App\Models\AuditLog;
 use App\Models\Bank;
 use App\Models\Currency;
+use App\Models\OwnerSettlement;
 use App\Models\PropertyExpense;
 use App\Models\RentDueItem;
 use App\Models\RentPayment;
@@ -170,6 +171,7 @@ class AuditLogResource extends Resource
             RentDueItem::class,
             RentPayment::class,
             PropertyExpense::class,
+            OwnerSettlement::class,
         ];
     }
 }
