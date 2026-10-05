@@ -15,9 +15,23 @@ class TaskNotificationService
 
         Task::query()
             ->with('assignee')
-            ->awaitingNotification($now)
+            ->whereNotNull('assigned_to_user_id')
+            ->whereNotNull('due_at')
+            ->whereNull('notified_at')
+            ->whereNotIn('status', [
+                Task::STATUS_COMPLETED,
+                Task::STATUS_CANCELLED,
+            ])
             ->orderBy('id')
-            ->each(function (Task $task) use (&$count): void {
+            ->get()
+            ->filter(function (Task $task) use ($now): bool {
+                $notifyAt = $task->due_at
+                    ->copy()
+                    ->subMinutes((int) ($task->notify_before_minutes ?? 0));
+
+                return $notifyAt->lte($now);
+            })
+            ->each(function (Task $task) use (&$count, $now): void {
                 [$type, $title] = $this->notificationMeta($task);
 
                 Notification::create([
@@ -34,7 +48,7 @@ class TaskNotificationService
                     ],
                 ]);
 
-                $task->forceFill(['notified_at' => now()])->saveQuietly();
+                $task->forceFill(['notified_at' => $now])->saveQuietly();
                 $count++;
             });
 
