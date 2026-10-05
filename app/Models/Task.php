@@ -62,13 +62,13 @@ class Task extends Model
 
         if (DB::connection()->getDriverName() === 'sqlite') {
             return $query->whereRaw(
-                "datetime(due_at) <= datetime(?, '+' || notify_before_minutes || ' minutes')",
+                "datetime(due_at, '-' || notify_before_minutes || ' minutes') <= datetime(?)",
                 [$now->toDateTimeString()],
             );
         }
 
         return $query->whereRaw(
-            'due_at <= DATE_ADD(?, INTERVAL notify_before_minutes MINUTE)',
+            'DATE_SUB(due_at, INTERVAL notify_before_minutes MINUTE) <= ?',
             [$now],
         );
     }
