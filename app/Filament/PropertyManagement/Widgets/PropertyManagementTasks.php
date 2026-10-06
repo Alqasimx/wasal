@@ -75,7 +75,28 @@ class PropertyManagementTasks extends TableWidget
                         Task::STATUS_IN_PROGRESS => 'قيد التنفيذ',
                         default => 'جديدة',
                     })
-                    ->badge(),
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'مكتملة' => 'success',
+                        'قيد التنفيذ' => 'info',
+                        default => 'warning',
+                    }),
+
+                TextColumn::make('priority')
+                    ->label('الأولوية')
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        Task::PRIORITY_URGENT => 'عاجلة',
+                        Task::PRIORITY_HIGH => 'عالية',
+                        Task::PRIORITY_LOW => 'منخفضة',
+                        default => 'عادية',
+                    })
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'عاجلة' => 'danger',
+                        'عالية' => 'warning',
+                        'منخفضة' => 'gray',
+                        default => 'info',
+                    }),
 
                 TextColumn::make('notification_state')
                     ->label('التنبيه')

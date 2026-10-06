@@ -61,4 +61,27 @@ class TaskNotificationTest extends TestCase
         $this->assertSame(0, app(TaskNotificationService::class)->notifyDueTasks());
         $this->assertDatabaseCount('notifications', 0);
     }
+
+    public function test_task_with_null_notice_window_is_notified_at_due_time(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-02 10:00:00'));
+        $assignee = User::factory()->create();
+        $creator = User::factory()->create();
+
+        Task::create([
+            'title' => 'فحص عداد المياه',
+            'assigned_to_user_id' => $assignee->id,
+            'created_by_user_id' => $creator->id,
+            'due_at' => now(),
+            'notify_before_minutes' => null,
+        ]);
+
+        $this->assertSame(1, app(TaskNotificationService::class)->notifyDueTasks());
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $assignee->id,
+            'body' => 'فحص عداد المياه — الموعد: 2026-10-02 10:00 — الأولوية: عادية',
+        ]);
+
+        Carbon::setTestNow();
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\PropertyManagement\Pages\PropertyManagementReports;
+use App\Filament\PropertyManagement\Pages\PropertyOverview;
 use App\Filament\PropertyManagement\Widgets\AdvancedOperationsOverview;
 use App\Filament\PropertyManagement\Widgets\MaintenanceOverview;
 use App\Filament\PropertyManagement\Widgets\OwnerFinanceOverview;
@@ -20,7 +21,6 @@ use App\Filament\Resources\RentDueItems\RentDueItemResource;
 use App\Filament\Resources\Tasks\TaskResource;
 use App\Filament\Resources\Tenancies\TenancyResource;
 use App\Filament\Resources\Tenants\TenantResource;
-use App\Filament\Widgets\PanelSwitcher;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -91,10 +91,10 @@ class PropertyManagementPanelProvider extends PanelProvider
             ->pages([
                 Dashboard::class,
                 PropertyManagementReports::class,
+                PropertyOverview::class,
             ])
             ->widgets([
                 AccountWidget::class,
-                PanelSwitcher::class,
                 PropertyManagementQuickActions::class,
                 PropertyManagementStatsOverview::class,
                 OccupancyOverview::class,

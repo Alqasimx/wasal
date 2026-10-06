@@ -42,6 +42,29 @@ class TasksTable
                         default => 'جديدة',
                     })
                     ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        Task::STATUS_COMPLETED => 'success',
+                        Task::STATUS_CANCELLED => 'gray',
+                        Task::STATUS_IN_PROGRESS => 'info',
+                        default => 'warning',
+                    })
+                    ->sortable(),
+
+                TextColumn::make('priority')
+                    ->label('الأولوية')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        Task::PRIORITY_URGENT => 'عاجلة',
+                        Task::PRIORITY_HIGH => 'عالية',
+                        Task::PRIORITY_LOW => 'منخفضة',
+                        default => 'عادية',
+                    })
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        Task::PRIORITY_URGENT => 'danger',
+                        Task::PRIORITY_HIGH => 'warning',
+                        Task::PRIORITY_LOW => 'gray',
+                        default => 'info',
+                    })
                     ->sortable(),
 
                 TextColumn::make('recurrence')

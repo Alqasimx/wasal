@@ -14,7 +14,7 @@ class RentArrearsWidget extends TableWidget
 {
     protected static ?string $heading = 'المتأخرات والتحصيل';
 
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 5;
 
     protected int|string|array $columnSpan = 'full';
 
