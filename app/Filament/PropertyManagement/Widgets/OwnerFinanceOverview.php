@@ -11,7 +11,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class OwnerFinanceOverview extends StatsOverviewWidget
 {
-    protected static ?int $sort = 7;
+    protected static ?int $sort = 8;
 
     public static function canView(): bool
     {

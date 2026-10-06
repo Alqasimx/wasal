@@ -34,22 +34,33 @@ class TaskNotificationService
             ->each(function (Task $task) use (&$count, $now): void {
                 [$type, $title] = $this->notificationMeta($task);
 
-                Notification::create([
-                    'user_id' => $task->assigned_to_user_id,
-                    'type' => $type,
-                    'title' => $title,
-                    'body' => $task->title,
-                    'data' => [
-                        'task_id' => $task->id,
-                        'related_type' => $task->related_type,
-                        'related_id' => $task->related_id,
-                        'due_at' => $task->due_at?->toISOString(),
-                        'recurrence' => $task->recurrence,
-                    ],
-                ]);
+                $alreadyNotified = Notification::query()
+                    ->where('user_id', $task->assigned_to_user_id)
+                    ->where('type', $type)
+                    ->whereJsonContains('data->task_id', $task->id)
+                    ->exists();
+
+                if (! $alreadyNotified) {
+                    Notification::create([
+                        'user_id' => $task->assigned_to_user_id,
+                        'type' => $type,
+                        'title' => $title,
+                        'body' => $task->title
+                            .' — الموعد: '.($task->due_at?->format('Y-m-d H:i') ?? 'غير محدد')
+                            .' — الأولوية: '.$this->priorityLabel($task->priority),
+                        'data' => [
+                            'task_id' => $task->id,
+                            'related_type' => $task->related_type,
+                            'related_id' => $task->related_id,
+                            'due_at' => $task->due_at?->toISOString(),
+                            'recurrence' => $task->recurrence,
+                            'priority' => $task->priority,
+                        ],
+                    ]);
+                    $count++;
+                }
 
                 $task->forceFill(['notified_at' => $now])->saveQuietly();
-                $count++;
             });
 
         return $count;
@@ -70,6 +81,16 @@ class TaskNotificationService
             'property_unit' => ['occupancy_due', 'متابعة إشغال وحدة'],
             'property_vendor' => ['vendor_due', 'متابعة مورد / فني'],
             default => ['task_due_soon', 'مهمة قريبة الاستحقاق'],
+        };
+    }
+
+    private function priorityLabel(?string $priority): string
+    {
+        return match ($priority) {
+            Task::PRIORITY_URGENT => 'عاجلة',
+            Task::PRIORITY_HIGH => 'عالية',
+            Task::PRIORITY_LOW => 'منخفضة',
+            default => 'عادية',
         };
     }
 }

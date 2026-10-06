@@ -538,6 +538,27 @@
         font-weight: 850;
     }
 
+    .wasal-page-context__user {
+        display: grid;
+        gap: .12rem;
+        min-width: 12rem;
+        padding-inline: .9rem;
+        border-inline: 1px solid var(--wasal-border);
+    }
+
+    .wasal-page-context__user span,
+    .wasal-page-context__user small {
+        color: var(--wasal-muted);
+        font-size: .72rem;
+        font-weight: 700;
+    }
+
+    .wasal-page-context__user strong {
+        color: var(--wasal-ink);
+        font-size: .95rem;
+        font-weight: 850;
+    }
+
     .wasal-page-context__actions {
         display: flex;
         flex-wrap: wrap;
@@ -589,6 +610,13 @@
         .wasal-page-context {
             align-items: stretch;
             flex-direction: column;
+        }
+
+        .wasal-page-context__user {
+            min-width: 0;
+            padding: .65rem 0;
+            border-inline: 0;
+            border-block: 1px solid var(--wasal-border);
         }
 
         .wasal-page-context__actions {

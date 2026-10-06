@@ -33,6 +33,14 @@
         <strong>{{ $current['label'] }}</strong>
     </div>
 
+    @if ($user)
+        <div class="wasal-page-context__user" title="المستخدم الحالي">
+            <span>المستخدم الحالي</span>
+            <strong>{{ $user->name }}</strong>
+            <small>{{ $user->email ?: ($user->phone ?: '—') }}</small>
+        </div>
+    @endif
+
     <div class="wasal-page-context__actions">
         <button
             type="button"

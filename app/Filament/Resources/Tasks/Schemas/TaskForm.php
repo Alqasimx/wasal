@@ -55,6 +55,18 @@ class TaskForm
                     ->required()
                     ->default(Task::STATUS_PENDING),
 
+                Select::make('priority')
+                    ->label('الأولوية')
+                    ->options([
+                        Task::PRIORITY_LOW => 'منخفضة',
+                        Task::PRIORITY_NORMAL => 'عادية',
+                        Task::PRIORITY_HIGH => 'عالية',
+                        Task::PRIORITY_URGENT => 'عاجلة',
+                    ])
+                    ->native(false)
+                    ->required()
+                    ->default(Task::PRIORITY_NORMAL),
+
                 TextInput::make('notify_before_minutes')
                     ->label('التنبيه قبل الاستحقاق بالدقائق')
                     ->numeric()

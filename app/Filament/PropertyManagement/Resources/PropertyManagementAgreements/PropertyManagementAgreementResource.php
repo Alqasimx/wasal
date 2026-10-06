@@ -3,12 +3,14 @@
 namespace App\Filament\PropertyManagement\Resources\PropertyManagementAgreements;
 
 use App\Filament\Concerns\HasResourcePermissions;
+use App\Filament\PropertyManagement\Pages\PropertyOverview;
 use App\Filament\PropertyManagement\Resources\PropertyManagementAgreements\Pages\CreatePropertyManagementAgreement;
 use App\Filament\PropertyManagement\Resources\PropertyManagementAgreements\Pages\EditPropertyManagementAgreement;
 use App\Filament\PropertyManagement\Resources\PropertyManagementAgreements\Pages\ListPropertyManagementAgreements;
 use App\Models\PropertyManagementAgreement;
 use App\Models\PropertyService;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -257,6 +259,14 @@ class PropertyManagementAgreementResource extends Resource
             ->striped()
             ->defaultPaginationPageOption(10)
             ->recordActions([
+                Action::make('property_overview')
+                    ->label('ملف العقار')
+                    ->icon('heroicon-o-building-office')
+                    ->color('primary')
+                    ->url(fn (PropertyManagementAgreement $record): string => PropertyOverview::getUrl(
+                        ['record' => $record->property_id],
+                        panel: 'property-management',
+                    )),
                 EditAction::make()->label('تعديل الاتفاق'),
             ]);
     }

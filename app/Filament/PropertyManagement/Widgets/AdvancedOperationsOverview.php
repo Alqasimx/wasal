@@ -13,7 +13,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class AdvancedOperationsOverview extends StatsOverviewWidget
 {
-    protected static ?int $sort = 8;
+    protected static ?int $sort = 9;
 
     public static function canView(): bool
     {
